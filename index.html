@@ -3,18 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <title>RushRetake Auth</title>
-
 <style>
-    body {
-        background: #0d0d0d;
-        color: #ffffff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding-top: 40vh;
-        font-size: 24px;
-    }
+body {
+    background: #0d0d0d;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 40vh;
+    font-size: 24px;
+}
 </style>
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -25,18 +23,23 @@
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// Вариант №1 — сервер ждёт initDataUnsafe
 const data = tg.initDataUnsafe;
 
-if (!data || Object.keys(data).length === 0) {
-    document.getElementById("msg").innerText =
-        "Откройте WebApp через Telegram.";
+if (!data || !data.user) {
+    document.getElementById("msg").innerText = "Откройте WebApp через Telegram.";
 } else {
+
+    const payload = {
+        user: {
+            user: data.user,
+            auth_date: data.auth_date
+        }
+    };
 
     fetch("https://telegram-auth-70lq.onrender.com/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: data })
+        body: JSON.stringify(payload)
     })
     .then(async res => {
         const raw = await res.text();
@@ -46,24 +49,18 @@ if (!data || Object.keys(data).length === 0) {
         try {
             json = JSON.parse(raw);
         } catch (e) {
-            console.log("JSON PARSE ERROR:", e);
-            document.getElementById("msg").innerText =
-                "Ошибка сервера. Попробуйте позже.";
+            document.getElementById("msg").innerText = "Ошибка сервера.";
             return;
         }
 
         if (json.ok) {
-            document.getElementById("msg").innerText =
-                "Готово! Теперь вернитесь в игру.";
+            document.getElementById("msg").innerText = "Готово! Код отправлен в Telegram.";
         } else {
-            document.getElementById("msg").innerText =
-                "Ошибка сервера.";
+            document.getElementById("msg").innerText = "Ошибка регистрации.";
         }
     })
     .catch(err => {
-        console.log("FETCH ERROR:", err);
-        document.getElementById("msg").innerText =
-            "Ошибка сервера. Попробуйте позже.";
+        document.getElementById("msg").innerText = "Ошибка сервера.";
     });
 }
 </script>
