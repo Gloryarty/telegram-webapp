@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html>
-<body>
+<head>
+<meta charset="UTF-8">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body style="background:#000; color:#fff;">
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// Получаем данные Telegram
 const data = tg.initDataUnsafe;
-
-// Передаём их в Unity через deep link
 const json = encodeURIComponent(JSON.stringify(data));
+
 window.location.href = "unity://" + json;
 </script>
+
 </body>
 </html>
