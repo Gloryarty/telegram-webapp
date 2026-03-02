@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
+<title>RushRetake Auth</title>
+<style>
+    body {
+        background: #0d0d0d;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding-top: 40vh;
+        font-size: 24px;
+    }
+</style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body style="background:#000; color:#fff;">
+<body>
+
+    Вы успешно привязали Telegram к RushRetake!
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -13,7 +26,9 @@ tg.ready();
 const data = tg.initDataUnsafe;
 const json = encodeURIComponent(JSON.stringify(data));
 
-window.location.href = "unity://" + json;
+setTimeout(() => {
+    window.location.href = "unity://" + json;
+}, 1500);
 </script>
 
 </body>
