@@ -25,9 +25,9 @@
 const tg = window.Telegram.WebApp;
 tg.ready();
 
+// Вариант №1 — сервер ждёт initDataUnsafe
 const data = tg.initDataUnsafe;
 
-// Если Mini App открыт не через Telegram
 if (!data || Object.keys(data).length === 0) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram.";
