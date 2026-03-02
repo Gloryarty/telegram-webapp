@@ -17,20 +17,32 @@
 </head>
 <body>
 
-<div id="msg">Вы успешно привязали Telegram к RushRetake!</div>
+<div id="msg">Привязываем аккаунт...</div>
 
 <script>
 const tg = window.Telegram.WebApp;
+tg.ready();
 
-if (!tg || !tg.initDataUnsafe || Object.keys(tg.initDataUnsafe).length === 0) {
+const data = tg.initDataUnsafe;
+
+if (!data || Object.keys(data).length === 0) {
     document.getElementById("msg").innerText =
-        "Откройте WebApp через Telegram, а не через браузер.";
+        "Откройте WebApp через Telegram.";
 } else {
-    tg.ready();
-    const json = encodeURIComponent(JSON.stringify(tg.initDataUnsafe));
-    setTimeout(() => {
-        window.location.href = "unity://" + json;
-    }, 1500);
+    fetch("https://telegram-auth-70lq.onrender.com/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user: data })
+    })
+    .then(res => res.json())
+    .then(res => {
+        document.getElementById("msg").innerText =
+            "Готово! Теперь вернитесь в игру.";
+    })
+    .catch(err => {
+        document.getElementById("msg").innerText =
+            "Ошибка сервера. Попробуйте позже.";
+    });
 }
 </script>
 
