@@ -1,26 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>RushRetake Auth</title>
+
+<style>
+    body {
+        background: #0d0d0d;
+        color: #ffffff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding-top: 40vh;
+        font-size: 24px;
+    }
+</style>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+
+<div id="msg">Привязываем аккаунт...</div>
+
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-const data = tg.initDataUnsafe;
+const initData = tg.initData;
 
-if (!data || Object.keys(data).length === 0) {
+// Если Mini App открыт не через Telegram
+if (!initData || initData.length === 0) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram.";
 } else {
+
+    // Отправляем подписанные данные Telegram
     fetch("https://telegram-auth-70lq.onrender.com/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: data })
+        body: JSON.stringify({ initData })
     })
-    .then(res => res.json())
-    .then(res => {
-        document.getElementById("msg").innerText =
-            "Готово! Теперь вернитесь в игру.";
+    .then(async res => {
+        // Читаем ответ как текст, чтобы избежать зависаний
+        const raw = await res.text();
+        console.log("RAW RESPONSE:", raw);
+
+        let json;
+        try {
+            json = JSON.parse(raw);
+        } catch (e) {
+            console.log("JSON PARSE ERROR:", e);
+            document.getElementById("msg").innerText =
+                "Ошибка сервера. Попробуйте позже.";
+            return;
+        }
+
+        if (json.ok) {
+            document.getElementById("msg").innerText =
+                "Готово! Теперь вернитесь в игру.";
+        } else {
+            document.getElementById("msg").innerText =
+                "Ошибка проверки Telegram.";
+        }
     })
     .catch(err => {
+        console.log("FETCH ERROR:", err);
         document.getElementById("msg").innerText =
             "Ошибка сервера. Попробуйте позже.";
     });
 }
 </script>
+
+</body>
+</html>
