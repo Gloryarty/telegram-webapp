@@ -1,38 +1,16 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>RushRetake Auth</title>
-<style>
-    body {
-        background: #0d0d0d;
-        color: #ffffff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding-top: 40vh;
-        font-size: 24px;
-    }
-</style>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-
-<div id="msg">Привязываем аккаунт...</div>
-
-<script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-const data = tg.initDataUnsafe;
+const initData = tg.initData;
 
-if (!data || Object.keys(data).length === 0) {
+if (!initData) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram.";
 } else {
     fetch("https://telegram-auth-70lq.onrender.com/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user: data })
+        body: JSON.stringify({ initData })
     })
     .then(res => res.json())
     .then(res => {
@@ -41,10 +19,6 @@ if (!data || Object.keys(data).length === 0) {
     })
     .catch(err => {
         document.getElementById("msg").innerText =
-            "Ошибка сервера.";
+            "Ошибка сервера. Попробуйте позже.";
     });
 }
-</script>
-
-</body>
-</html>
