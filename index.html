@@ -1,72 +1,17 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<title>RushRetake Auth</title>
-<style>
-    body {
-        background: #0d0d0d;
-        color: #ffffff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding-top: 40vh;
-        font-size: 24px;
-    }
-</style>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-
-<div id="msg">Привязываем аккаунт...</div>
-
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// ВАЖНО: используем initData (подписанная строка)
-const initData = tg.initData;
+const data = tg.initDataUnsafe;
 
-if (!initData || initData.length === 0) {
+if (!data || Object.keys(data).length === 0) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram.";
 } else {
     fetch("https://telegram-auth-70lq.onrender.com/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData })
-    })
-    .then(async res => {
-        const data = await res.json();
-
-        if (data.ok) {
-            document.getElementById("msg").innerText =
-                "Готово! Теперь вернитесь в игру.";
-        } else {
-            document.getElementById("msg").innerText =
-                "Ошибка проверки Telegram.";
-        }
-    })
-    .catch(err => {
-        document.getElementById("msg").innerText =
-            "Ошибка сервера. Попробуйте позже.";
-    });
-}
-</script>
-
-</body>
-</html>const tg = window.Telegram.WebApp;
-tg.ready();
-
-const initData = tg.initData;
-
-if (!initData) {
-    document.getElementById("msg").innerText =
-        "Откройте WebApp через Telegram.";
-} else {
-    fetch("https://telegram-auth-70lq.onrender.com/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData })
+        body: JSON.stringify({ user: data })
     })
     .then(res => res.json())
     .then(res => {
@@ -78,3 +23,4 @@ if (!initData) {
             "Ошибка сервера. Попробуйте позже.";
     });
 }
+</script>
