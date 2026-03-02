@@ -25,22 +25,20 @@
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-const initData = tg.initData;
+const data = tg.initDataUnsafe;
 
 // Если Mini App открыт не через Telegram
-if (!initData || initData.length === 0) {
+if (!data || Object.keys(data).length === 0) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram.";
 } else {
 
-    // Отправляем подписанные данные Telegram
     fetch("https://telegram-auth-70lq.onrender.com/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ initData })
+        body: JSON.stringify({ user: data })
     })
     .then(async res => {
-        // Читаем ответ как текст, чтобы избежать зависаний
         const raw = await res.text();
         console.log("RAW RESPONSE:", raw);
 
@@ -59,7 +57,7 @@ if (!initData || initData.length === 0) {
                 "Готово! Теперь вернитесь в игру.";
         } else {
             document.getElementById("msg").innerText =
-                "Ошибка проверки Telegram.";
+                "Ошибка сервера.";
         }
     })
     .catch(err => {
