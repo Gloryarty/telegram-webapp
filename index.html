@@ -5,10 +5,12 @@
 const tg = window.Telegram.WebApp;
 tg.ready();
 
+// Получаем данные Telegram
 const data = tg.initDataUnsafe;
 
-// отправляем данные в Unity через deep link
-window.location.href = "unity://" + encodeURIComponent(JSON.stringify(data));
+// Передаём их в Unity через deep link
+const json = encodeURIComponent(JSON.stringify(data));
+window.location.href = "unity://" + json;
 </script>
 </body>
 </html>
