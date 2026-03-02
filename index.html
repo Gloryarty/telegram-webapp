@@ -17,21 +17,17 @@
 </head>
 <body>
 
-    <div id="msg">Вы успешно привязали Telegram к RushRetake!</div>
+<div id="msg">Вы успешно привязали Telegram к RushRetake!</div>
 
 <script>
 const tg = window.Telegram.WebApp;
 
-// Проверяем, что WebApp реально открыт в Telegram
 if (!tg || !tg.initDataUnsafe || Object.keys(tg.initDataUnsafe).length === 0) {
     document.getElementById("msg").innerText =
         "Откройте WebApp через Telegram, а не через браузер.";
 } else {
     tg.ready();
-
-    const data = tg.initDataUnsafe;
-    const json = encodeURIComponent(JSON.stringify(data));
-
+    const json = encodeURIComponent(JSON.stringify(tg.initDataUnsafe));
     setTimeout(() => {
         window.location.href = "unity://" + json;
     }, 1500);
