@@ -5,7 +5,7 @@
 <title>RushRetake Auth</title>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
 
     body {
         margin: 0;
@@ -14,12 +14,22 @@
         color: #ffffff;
         font-family: "Inter", Arial, sans-serif;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
         text-align: center;
         overflow: hidden;
         position: relative;
+    }
+
+    /* Лого */
+    #logo {
+        width: 140px;
+        height: auto;
+        margin-bottom: 25px;
+        animation: fadeIn 0.8s ease forwards;
+        opacity: 0;
     }
 
     /* Градиентное свечение */
@@ -37,13 +47,14 @@
     }
 
     #msg {
-        font-size: 28px;
-        font-weight: 500;
+        font-size: 32px;
+        font-family: "Bebas Neue", sans-serif;
+        letter-spacing: 1px;
         opacity: 0;
         transform: translateY(10px);
         animation: fadeIn 0.8s ease forwards;
         max-width: 90%;
-        line-height: 1.4;
+        line-height: 1.2;
         z-index: 10;
         text-shadow: 0 0 12px rgba(255,255,255,0.15);
     }
@@ -57,7 +68,7 @@
 
     /* Лоадер */
     .loader {
-        margin: 25px auto 0;
+        margin: 20px auto 0;
         width: 48px;
         height: 48px;
         border: 4px solid rgba(255,255,255,0.2);
@@ -90,10 +101,12 @@
 
 <div class="glow"></div>
 
-<div>
-    <div id="msg">⏳ Connecting your account...</div>
-    <div class="loader"></div>
-</div>
+<!-- ЛОГО -->
+<img id="logo" src="logo.png" alt="Logo">
+
+<!-- ТЕКСТ + ЛОАДЕР -->
+<div id="msg">⏳ Connecting your account...</div>
+<div class="loader"></div>
 
 <div id="confetti-container"></div>
 
