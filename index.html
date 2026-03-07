@@ -10,59 +10,64 @@
     body {
         margin: 0;
         padding: 0;
-        background: linear-gradient(
-            to bottom,
-            #0f2b3f 0%,      /* яркий голубой-синева сверху */
-            #0d1f2c 40%,     /* мягкий переход */
-            #0b0b0b 100%     /* глубокий тёмный низ */
-        );
-        color: #ffffff;
-        font-family: "Inter", Arial, sans-serif;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        height: 100vh;
         text-align: center;
-        overflow: hidden;
+
+        /* Градиент как на сайте */
+        background: linear-gradient(
+            to bottom,
+            #1e3c72 0%,     /* яркий голубой сверху */
+            #1a2f4d 40%,    /* мягкий переход */
+            #0b0b0b 100%    /* глубокий тёмный низ */
+        );
+
+        font-family: "Inter", sans-serif;
+        color: #fff;
         position: relative;
     }
 
-    /* Голубое свечение */
+    /* Мягкое голубое свечение */
     .glow {
         position: absolute;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(0,150,255,0.28), transparent 70%);
-        top: -150px;
+        width: 900px;
+        height: 900px;
+        background: radial-gradient(circle, rgba(0,140,255,0.35), transparent 70%);
+        top: -200px;
         left: 50%;
         transform: translateX(-50%);
-        filter: blur(90px);
+        filter: blur(120px);
         z-index: 0;
         pointer-events: none;
     }
 
     /* Лого */
     #logo {
-        width: 140px;
+        width: 150px;
         height: auto;
         margin-bottom: 25px;
-        animation: fadeIn 0.8s ease forwards;
         opacity: 0;
+        animation: fadeIn 0.8s ease forwards;
         z-index: 10;
     }
 
+    /* Текст */
     #msg {
-        font-size: 32px;
+        font-size: 36px;
         font-family: "Bebas Neue", sans-serif;
         letter-spacing: 1px;
         opacity: 0;
         transform: translateY(10px);
         animation: fadeIn 0.8s ease forwards;
         max-width: 90%;
-        line-height: 1.2;
+        line-height: 1.1;
         z-index: 10;
-        text-shadow: 0 0 12px rgba(255,255,255,0.15);
+        text-shadow: 0 0 18px rgba(0, 150, 255, 0.25);
     }
 
     @keyframes fadeIn {
@@ -75,8 +80,8 @@
     /* Лоадер */
     .loader {
         margin: 20px auto 0;
-        width: 48px;
-        height: 48px;
+        width: 50px;
+        height: 50px;
         border: 4px solid rgba(255,255,255,0.2);
         border-top-color: #00aaff;
         border-radius: 50%;
@@ -88,7 +93,7 @@
         to { transform: rotate(360deg); }
     }
 
-    /* Контейнер для конфетти */
+    /* Конфетти */
     #confetti-container {
         position: fixed;
         top: 0;
@@ -107,10 +112,8 @@
 
 <div class="glow"></div>
 
-<!-- ЛОГО -->
 <img id="logo" src="logo.png" alt="Logo">
 
-<!-- ТЕКСТ + ЛОАДЕР -->
 <div id="msg">⏳ Connecting your account...</div>
 <div class="loader"></div>
 
@@ -124,7 +127,7 @@ function setMessage(text) {
     document.getElementById("msg").innerText = text;
 }
 
-/* Улучшенный взрыв конфетти */
+/* Конфетти */
 function spawnConfettiExplosion() {
     const container = document.getElementById("confetti-container");
     const colors = ["#3bb4ff", "#00aaff", "#66d9ff", "#99e6ff", "#ccefff"];
