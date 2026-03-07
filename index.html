@@ -10,7 +10,12 @@
     body {
         margin: 0;
         padding: 0;
-        background: radial-gradient(circle at 50% 20%, #1a1a1a, #0b0b0b 70%);
+        background: linear-gradient(
+            to bottom,
+            #0f2b3f 0%,      /* яркий голубой-синева сверху */
+            #0d1f2c 40%,     /* мягкий переход */
+            #0b0b0b 100%     /* глубокий тёмный низ */
+        );
         color: #ffffff;
         font-family: "Inter", Arial, sans-serif;
         display: flex;
