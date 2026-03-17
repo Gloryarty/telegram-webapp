@@ -152,48 +152,46 @@ function spawnConfettiExplosion() {
     }
 }
 
-const data = tg.initDataUnsafe;
+const initData = tg.initData || tg.initDataUnsafe || "";
 
-if (!data || !data.user) {
-    setMessage("⚠️ Please open this WebApp through Telegram.");
-    hideLoader();
-} else {
-    const payload = { user: { user: data.user, auth_date: data.auth_date } };
-
-    fetch("https://telegram-auth-70lq.onrender.com/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(async res => {
-        const raw = await res.text();
-        let json;
-        try { json = JSON.parse(raw); } catch (e) {
-            setMessage("❌ Server error.");
-            hideLoader();
-            return;
-        }
-
-        if (res.status === 429 && json?.message) {
-            setMessage("❌ " + json.message);
-            hideLoader();
-            return;
-        }
-
-        if (json.ok) {
-            setMessage("🎉 Done! Your login code was sent to Telegram.");
-            hideLoader();
-            spawnConfettiExplosion();
-        } else {
-            setMessage("❌ " + (json.message || json.error || "Registration failed."));
-            hideLoader();
-        }
-    })
-    .catch(err => {
+fetch("https://telegram-auth-70lq.onrender.com/auth", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ initData })
+})
+.then(async res => {
+    const raw = await res.text();
+    let json;
+    try { json = JSON.parse(raw); } catch (e) {
         setMessage("❌ Server error.");
         hideLoader();
-    });
-}
+        return;
+    }
+
+    if (res.status === 429 && json?.message) {
+        setMessage("❌ " + json.message);
+        hideLoader();
+        return;
+    }
+    if (res.status === 401 && json?.error) {
+        setMessage("❌ " + json.error);
+        hideLoader();
+        return;
+    }
+
+    if (json.ok) {
+        setMessage("🎉 Done! Your login code was sent to Telegram.");
+        hideLoader();
+        spawnConfettiExplosion();
+    } else {
+        setMessage("❌ " + (json.message || json.error || "Registration failed."));
+        hideLoader();
+    }
+})
+.catch(err => {
+    setMessage("❌ Server error.");
+    hideLoader();
+});
 </script>
 
 </body>
