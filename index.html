@@ -1,200 +1,649 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>RushRetake Auth</title>
+import express from "express";
+import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
+import axios from "axios";
+import dotenv from "dotenv";
+import { Resvg } from "@resvg/resvg-js";
+import jwt from "jsonwebtoken";
+import { randomUUID, createHash, createHmac } from "crypto";
 
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+dotenv.config();
 
-    body {
-        margin: 0;
-        padding: 0;
-        background: linear-gradient(
-            to bottom,
-            #0f2b3f 0%,
-            #0d1f2c 40%,
-            #0b0b0b 100%
-        );
-        color: #ffffff;
-        font-family: "Inter", Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        text-align: center;
-        overflow: hidden;
-        position: relative;
-    }
+const app = express();
+app.use(cors());
+app.use(express.json({ limit: "2mb" }));
 
-    .glow {
-        position: absolute;
-        width: 600px;
-        height: 600px;
-        background: radial-gradient(circle, rgba(0,150,255,0.28), transparent 70%);
-        top: -150px;
-        left: 50%;
-        transform: translateX(-50%);
-        filter: blur(90px);
-        z-index: 0;
-        pointer-events: none;
-    }
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY // service role key on backend
+);
 
-    #logo {
-        width: 140px;
-        height: auto;
-        margin-bottom: 25px;
-        animation: fadeIn 0.8s ease forwards;
-        opacity: 0;
-        z-index: 10;
-    }
+// simple banlist (en/ru, twitch-like + profanity)
+const bannedWords = [
+  "fuck","shit","bitch","asshole","cunt","dick","pussy","slut","whore","faggot","nigger","retard","pedo","pedophile","hitler","nazi",
+  "ёб","пизд","хуй","сука","бляд","бля","мразь","шлюх","дроч","пидор","педик","гондон","жоп","мудак"
+];
 
-    #msg {
-        font-size: 32px;
-        font-family: "Bebas Neue", sans-serif;
-        letter-spacing: 1px;
-        opacity: 0;
-        transform: translateY(10px);
-        animation: fadeIn 0.8s ease forwards;
-        max-width: 90%;
-        line-height: 1.2;
-        z-index: 10;
-        text-shadow: 0 0 12px rgba(255,255,255,0.15);
-    }
+// JWT
+const JWT_SECRET = process.env.JWT_SECRET || "CHANGE_ME_SECRET";
+const JWT_TTL_SEC = 60 * 60 * 24 * 30; // ~30 days
 
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .loader {
-        margin: 20px auto 0;
-        width: 48px;
-        height: 48px;
-        border: 4px solid rgba(255,255,255,0.2);
-        border-top-color: #00aaff;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        z-index: 10;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    #confetti-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        overflow: hidden;
-        z-index: 999;
-    }
-</style>
-
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-</head>
-<body>
-
-<div class="glow"></div>
-<img id="logo" src="logo.png" alt="Logo">
-<div id="msg">⏳ Connecting your account...</div>
-<div class="loader"></div>
-<div id="confetti-container"></div>
-
-<script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-
-function setMessage(text) {
-    document.getElementById("msg").innerText = text;
-}
-function hideLoader() {
-    const loader = document.querySelector(".loader");
-    if (loader) loader.style.display = "none";
+function signToken(tgId) {
+  return jwt.sign({ sub: String(tgId) }, JWT_SECRET, { expiresIn: JWT_TTL_SEC });
 }
 
-function spawnConfettiExplosion() {
-    const container = document.getElementById("confetti-container");
-    const colors = ["#3bb4ff", "#00aaff", "#66d9ff", "#99e6ff", "#ccefff"];
-    const particles = 80;
-    for (let i = 0; i < particles; i++) {
-        const div = document.createElement("div");
-        div.style.position = "absolute";
-        div.style.width = "10px";
-        div.style.height = "10px";
-        div.style.background = colors[Math.floor(Math.random() * colors.length)];
-        div.style.borderRadius = "3px";
-        div.style.left = "50%";
-        div.style.top = "50%";
-        div.style.transform = "translate(-50%, -50%)";
-        div.style.willChange = "transform, opacity";
-        container.appendChild(div);
-
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 5 + Math.random() * 7;
-        const gravity = 0.18;
-        let vx = Math.cos(angle) * speed;
-        let vy = Math.sin(angle) * speed;
-        let x = 0, y = 0, opacity = 1;
-
-        function animate() {
-            x += vx; y += vy; vy += gravity; opacity -= 0.015;
-            div.style.transform = `translate(${x}px, ${y}px) rotate(${y * 6}deg)`;
-            div.style.opacity = opacity;
-            if (opacity > 0) requestAnimationFrame(animate);
-            else div.remove();
-        }
-        requestAnimationFrame(animate);
-    }
+function verifyToken(req) {
+  const auth = req.headers.authorization || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (!token) throw new Error("no_token");
+  return jwt.verify(token, JWT_SECRET);
 }
 
-const data = tg.initDataUnsafe;
+function getTelegramId(req) {
+  const payload = verifyToken(req);
+  return payload.sub;
+}
 
-if (!data || !data.user) {
-    setMessage("⚠️ Please open this WebApp through Telegram.");
-    hideLoader();
-} else {
-    const payload = { user: { user: data.user, auth_date: data.auth_date } };
+// Verify Telegram WebApp initData (https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app)
+function verifyTelegramInitData(initDataRaw) {
+  if (!initDataRaw || typeof initDataRaw !== "string") return null;
+  const params = new URLSearchParams(initDataRaw);
+  const hash = params.get("hash");
+  if (!hash) return null;
+  params.delete("hash");
 
-    fetch("https://telegram-auth-70lq.onrender.com/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    .then(async res => {
-        const raw = await res.text();
-        let json;
-        try { json = JSON.parse(raw); } catch (e) {
-            setMessage("❌ Server error.");
-            hideLoader();
-            return;
-        }
+  const dataCheckString = [...params]
+    .map(([k, v]) => `${k}=${v}`)
+    .sort()
+    .join("\n");
 
-        if (res.status === 429 && json?.message) {
-            setMessage("❌ " + json.message);
-            hideLoader();
-            return;
-        }
+  const secretKey = createHash("sha256").update(process.env.BOT_TOKEN || "").digest();
+  const hmac = createHmac("sha256", secretKey).update(dataCheckString).digest("hex");
+  if (hmac !== hash) return null;
 
-        if (json.ok) {
-            setMessage("🎉 Done! Your login code was sent to Telegram.");
-            hideLoader();
-            spawnConfettiExplosion();
-        } else {
-            setMessage("❌ " + (json.message || json.error || "Registration failed."));
-            hideLoader();
-        }
-    })
-    .catch(err => {
-        setMessage("❌ Server error.");
-        hideLoader();
+  const userJson = params.get("user");
+  let user = null;
+  try {
+    if (userJson) user = JSON.parse(userJson);
+  } catch (e) {
+    return null;
+  }
+  return user;
+}
+
+function escapeMarkdownV2(text = "") {
+  return String(text).replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
+}
+
+// =========================
+// CASE DEFINITIONS (from Assets/Cases_System and Data_Skins)
+// =========================
+const caseDefinitions = {
+  Big_Star: {
+    caseName: "Big Star",
+    chances: [
+      { rarity: 0, percent: 68 },
+      { rarity: 1, percent: 21 },
+      { rarity: 2, percent: 9 },
+      { rarity: 3, percent: 1.2 },
+      { rarity: 4, percent: 0.8 }
+    ],
+    skinGuids: [
+      "8a6baf6a87c6a5c47bc4f31d5a5b0561",
+      "b9fd11ef91ef0ad43b2293437d189c23",
+      "95f5f25270e6c2040b8417f2d779d4f4",
+      "9a63eb3524e683040a3f9213186439ac",
+      "f7c21a2aa8d7e6546ba4d94b573ad130",
+      "00b51b9b41f89f34783bea81c19a63bd",
+      "b57058afaf09a8e41a7a58e5d64d4078",
+      "c238cda21db5f204094b147f95883b44",
+      "de1ef018723c57c49b01ae1ea49ac7d0",
+      "cd5a01d4c754a8c4ab991c0a4dd787dd",
+      "73fe2a0d84bb1204aba5ea02527a6677",
+      "1a9b2a52b2406664e922f7b82eded70a",
+      "456c1e4f6ec1df44792ec016d9276219",
+      "34234f168b2eebc4f879a57bd4369c88",
+      "dcd237643cccdfd4da978e2cb2c9eb38",
+      "ae95aee9e6cb9094e8fe2e093b59b711",
+      "7b52a45a90bac7f49a86e031bd958f83"
+    ]
+  },
+  Revival: {
+    caseName: "Revival",
+    chances: [
+      { rarity: 0, percent: 68 },
+      { rarity: 1, percent: 21 },
+      { rarity: 2, percent: 9 },
+      { rarity: 3, percent: 1.2 },
+      { rarity: 4, percent: 0.8 }
+    ],
+    skinGuids: [
+      "5c8e3122a0654c747a95553ef37c0d24",
+      "320771e5e34b8e849ad746d3265faa3c",
+      "56f9128c722ee5349856f5f059806598",
+      "f557c0db9a2a54c48a7e3683af6f59fa",
+      "8b12f7175bc490043a026ec5b479e05d",
+      "add4fe444d5d4a94b9b0367e31a8c333",
+      "6353da81044d7a347a628dd563eecf39",
+      "f3238ddf1944c774f89762d9e6863903",
+      "d553fc21e19333a4f85e574e8b31296c",
+      "a78b32724b0247f45a9cbb38469a1fc5",
+      "78380f1bb8e88fd40893d6a30258a2e9",
+      "b43bf245b652b2644b5865ff94b00c46",
+      "84aea4886b2203c49be333e4b70f7e42",
+      "f8accd2cfbf1037469ee3b5113de7240",
+      "31f0a6b5b20511f4facd05f3cc7ace6b",
+      "5218cb50f0fe4c643a3a9b3be16fa44c",
+      "9b6e30ee09c5ec849b6169a4a2c414ae"
+    ]
+  }
+};
+
+function pickByWeight(entries) {
+  const total = entries.reduce((s, e) => s + e.weight, 0);
+  const roll = Math.random() * total;
+  let acc = 0;
+  for (const e of entries) {
+    acc += e.weight;
+    if (roll <= acc) return e.value;
+  }
+  return entries[entries.length - 1].value;
+}
+
+// =========================
+// AUTH FROM MINI APP
+// =========================
+
+app.post("/auth", async (req, res) => {
+  try {
+    // Expect Telegram WebApp initData to prevent spoofing
+    const tgUser = verifyTelegramInitData(req.body?.initData);
+
+    if (!tgUser || !tgUser.id) {
+      return res.status(401).json({ ok: false, error: "Invalid or unauthenticated Telegram payload" });
+    }
+
+    const tgId = Number(tgUser.id);
+    if (!tgId) {
+      return res.status(400).json({ ok: false, error: "Invalid Telegram user id" });
+    }
+
+    // Ban check
+    const { data: userData, error: banErr } = await supabase
+      .from("users")
+      .select("banned, public_id")
+      .eq("id", tgId)
+      .maybeSingle();
+
+    if (banErr) {
+      console.log("BAN CHECK ERROR:", banErr);
+      return res.status(500).json({ ok: false, error: banErr.message });
+    }
+
+    if (userData?.banned === true || userData?.banned === "true") {
+      try {
+        await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+          chat_id: tgId,
+          text: "Your account has been blocked. The duration of the ban is shown in the game. Please follow the game rules!"
+        });
+      } catch (err) {
+        console.log("BAN MESSAGE ERROR:", err.response?.data || err.message);
+      }
+
+      return res.json({ ok: false, banned: true });
+    }
+
+    // Avatar processing
+    let finalPhotoUrl = tgUser.photo_url || null;
+    if (tgUser.photo_url) {
+      const processed = await processAvatar(tgUser.photo_url, tgId);
+      if (processed) finalPhotoUrl = processed;
+    }
+
+    const resolvedPublicId = await ensurePublicIdForUser(tgId, userData?.public_id);
+
+    // Upsert user
+    const { error: upsertErr } = await supabase.from("users").upsert({
+      id: tgId,
+      public_id: resolvedPublicId,
+      username: tgUser.username || null,
+      first_name: tgUser.first_name || null,
+      last_name: tgUser.last_name || null,
+      photo_url: finalPhotoUrl,
+      auth_date: tgUser.auth_date || null,
+      nickname: tgUser.username || tgUser.first_name || `user_${tgId}`
+    }, { onConflict: "id" });
+
+    if (upsertErr) {
+      console.log("USER UPSERT ERROR:", upsertErr);
+      return res.status(500).json({ ok: false, error: upsertErr.message });
+    }
+
+    // Rate limit: max 2 codes per hour per user
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count: codesLastHour, error: rateErr } = await supabase
+      .from("login_codes")
+      .select("id", { count: "exact", head: true })
+      .eq("tg_id", tgId)
+      .gte("created_at", oneHourAgo);
+
+    if (rateErr) {
+      console.log("LOGIN CODE RATE ERROR:", rateErr);
+      return res.status(500).json({ ok: false, error: rateErr.message });
+    }
+
+    if ((codesLastHour ?? 0) >= 2) {
+      try {
+        await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+          chat_id: tgId,
+          text: "You have reached the limit for login codes. Please try again in about an hour."
+        });
+      } catch (err) {
+        console.log("RATE LIMIT TELEGRAM NOTICE ERROR:", err.response?.data || err.message);
+      }
+
+      return res.status(429).json({
+        ok: false,
+        error: "too_many_codes",
+        message: "You can request only 2 login codes per hour. Please try again later."
+      });
+    }
+
+    const code = generateCode();
+
+    const { error: codeErr } = await supabase.from("login_codes").insert({
+      tg_id: tgId,
+      code
     });
-}
-</script>
 
-</body>
-</html>
+    if (codeErr) {
+      console.log("LOGIN CODE INSERT ERROR:", codeErr);
+      return res.status(500).json({ ok: false, error: codeErr.message });
+    }
+
+    const safeCode = escapeMarkdownV2(code);
+    const safeText = escapeMarkdownV2("Tap to reveal or use the button below.");
+
+    try {
+      await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        chat_id: tgId,
+        text: `Your login code:\n\n||${safeCode}||\n\n${safeText}`,
+        parse_mode: "MarkdownV2",
+        reply_markup: {
+          inline_keyboard: [[{ text: "Copy code", copy_text: { text: code } }]]
+        }
+      });
+    } catch (err) {
+      console.log("TELEGRAM SEND ERROR:", err.response?.data || err.message);
+    }
+
+    const token = signToken(tgId);
+    return res.json({ ok: true, token, public_id: resolvedPublicId });
+  } catch (e) {
+    console.log("AUTH ERROR:", e);
+    return res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// =========================
+// LOGIN BY CODE
+// =========================
+
+app.post("/login-code", async (req, res) => {
+  const { code } = req.body || {};
+  if (!code) return res.status(400).json({ ok: false, error: "code required" });
+
+  const { data, error } = await supabase
+    .from("login_codes")
+    .select("*")
+    .eq("code", code)
+    .maybeSingle();
+
+  if (error) {
+    console.log("LOGIN_CODE LOOKUP ERROR:", error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+
+  if (!data) return res.json({ ok: false });
+
+  const created = new Date(data.created_at);
+  const now = new Date();
+  const diffMinutes = (now - created) / 1000 / 60;
+
+  if (diffMinutes > 5) {
+    await supabase.from("login_codes").delete().eq("id", data.id);
+    return res.json({ ok: false, expired: true });
+  }
+
+  await supabase.from("login_codes").delete().eq("id", data.id);
+
+  const { data: userData } = await supabase
+    .from("users")
+    .select("username, banned, public_id")
+    .eq("id", data.tg_id)
+    .maybeSingle();
+
+  if (userData?.banned === true || userData?.banned === "true") {
+    try {
+      await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+        chat_id: data.tg_id,
+        text: "Your account has been blocked. The duration of the ban is shown in the game. Please follow the game rules!"
+      });
+    } catch (err) {
+      console.log("BAN MESSAGE ERROR:", err.response?.data || err.message);
+    }
+
+    return res.json({ ok: false, banned: true });
+  }
+
+  let resolvedPublicId = null;
+  try {
+    resolvedPublicId = await ensurePublicIdForUser(data.tg_id, userData?.public_id);
+  } catch (e) {
+    console.log("PUBLIC_ID RESOLVE ERROR:", e.message);
+  }
+
+  const ua = req.headers["user-agent"] || "";
+  const device = detectDevice(ua);
+
+  const mskTime = new Date(Date.now() + 3 * 60 * 60 * 1000);
+  const formattedTime = mskTime.toLocaleString("ru-RU", {
+    timeZone: "Europe/Moscow",
+    hour12: false
+  });
+
+  const username = userData?.username ? `@${userData.username}` : "Unknown";
+
+  try {
+    await axios.post(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+      chat_id: data.tg_id,
+      text:
+`Account login successful!
+Username: ${username}
+Device: ${device}
+Login time (MSK): ${formattedTime}`
+    });
+  } catch (err) {
+    console.log("TELEGRAM LOGIN NOTIFY ERROR:", err.response?.data || err.message);
+  }
+
+  const token = signToken(data.tg_id);
+  return res.json({ ok: true, token, public_id: resolvedPublicId });
+});
+
+// =========================
+// REFRESH AVATAR (UNITY)
+// =========================
+
+app.post("/refresh-avatar", async (req, res) => {
+  const { telegram_id } = req.body || {};
+  if (!telegram_id) return res.json({ ok: false, error: "No telegram_id" });
+
+  try {
+    const tgResp = await axios.get(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getUserProfilePhotos?user_id=${telegram_id}&limit=1`
+    );
+
+    const photos = tgResp.data?.result?.photos;
+    if (!photos || photos.length === 0) {
+      return res.json({ ok: true, photo_url: null });
+    }
+
+    const fileId = photos[0][0].file_id;
+
+    const fileResp = await axios.get(
+      `https://api.telegram.org/bot${process.env.BOT_TOKEN}/getFile?file_id=${fileId}`
+    );
+
+    const filePath = fileResp.data?.result?.file_path;
+    if (!filePath) return res.json({ ok: false });
+
+    const fileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${filePath}`;
+    const finalPhotoUrl = await processAvatar(fileUrl, telegram_id);
+
+    await supabase
+      .from("users")
+      .update({ photo_url: finalPhotoUrl })
+      .eq("id", telegram_id);
+
+    return res.json({ ok: true, photo_url: finalPhotoUrl });
+  } catch (err) {
+    console.log("REFRESH AVATAR ERROR:", err.message);
+    return res.json({ ok: false });
+  }
+});
+
+// =========================
+// INVENTORY API
+// =========================
+
+app.get("/inventory", async (req, res) => {
+  let telegram_id;
+  try {
+    telegram_id = getTelegramId(req);
+  } catch (e) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+
+  const { data, error } = await supabase
+    .from("user_inventory")
+    .select("*")
+    .eq("telegram_id", String(telegram_id))
+    .maybeSingle();
+
+  if (error) {
+    console.log("INVENTORY GET ERROR:", error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+
+  if (!data) {
+    return res.json({
+      telegram_id: String(telegram_id),
+      gold: 0,
+      case_count: 0,
+      key_count: 0,
+      items: []
+    });
+  }
+
+  return res.json(data);
+});
+
+app.post("/inventory/sync", async (req, res) => {
+  let telegram_id;
+  try {
+    telegram_id = getTelegramId(req);
+  } catch (e) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+
+  // load current state
+  const { data: inv, error: invErr } = await supabase
+    .from("user_inventory")
+    .select("*")
+    .eq("telegram_id", String(telegram_id))
+    .maybeSingle();
+
+  if (invErr) {
+    console.log("INVENTORY SYNC FETCH ERROR:", invErr);
+    return res.status(500).json({ ok: false, error: invErr.message });
+  }
+
+  const body = req.body || {};
+
+  const payload = {
+    telegram_id: String(telegram_id),
+    gold: Number(body.gold ?? inv?.gold ?? 0) || 0,
+    case_count: Number(body.case_count ?? inv?.case_count ?? 0) || 0,
+    key_count: Number(body.key_count ?? inv?.key_count ?? 0) || 0,
+    case_counts: body.case_counts ?? inv?.case_counts ?? {},
+    key_counts: body.key_counts ?? inv?.key_counts ?? {},
+    items: Array.isArray(body.items) ? body.items : (inv?.items ?? []),
+    updated_at: new Date().toISOString()
+  };
+
+  const { data: saved, error: upErr } = await supabase
+    .from("user_inventory")
+    .upsert(payload, { onConflict: "telegram_id" })
+    .select()
+    .single();
+
+  if (upErr) {
+    console.log("INVENTORY SYNC UPSERT ERROR:", upErr);
+    return res.status(500).json({ ok: false, error: upErr.message });
+  }
+
+  return res.json({ ok: true, inventory: saved });
+});
+
+// =========================
+// CASE OPEN (server‑authoritative)
+// =========================
+app.post("/case/open", async (req, res) => {
+  let telegram_id;
+  try {
+    telegram_id = getTelegramId(req);
+  } catch (e) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+
+  const caseId = req.body?.caseId || "Big_Star";
+  const def = caseDefinitions[caseId];
+  if (!def) return res.status(400).json({ ok: false, error: "unknown_case" });
+
+  // load inventory
+  const { data: inv, error: invErr } = await supabase
+    .from("user_inventory")
+    .select("*")
+    .eq("telegram_id", String(telegram_id))
+    .maybeSingle();
+
+  if (invErr) {
+    console.log("OPEN CASE inventory error:", invErr);
+    return res.status(500).json({ ok: false, error: invErr.message });
+  }
+  if (!inv) {
+    return res.status(400).json({ ok: false, error: "no_inventory" });
+  }
+
+  const caseCounts = inv?.case_counts || null;
+  const keyCounts = inv?.key_counts || null;
+
+  const currentCases = caseCounts && typeof caseCounts === "object"
+    ? Number(caseCounts[caseId] ?? 0)
+    : Number(inv?.case_count ?? 0);
+  if (currentCases <= 0) {
+    return res.status(400).json({ ok: false, error: "no_cases" });
+  }
+
+  // choose rarity by weight
+  const rarity = pickByWeight(def.chances.map(c => ({ weight: c.percent, value: c.rarity })));
+
+  // fetch skins of that rarity for this case
+  const { data: skins, error: skinErr } = await supabase
+    .from("skins_catalog")
+    .select("guid, weapon, skin, collection, rarity, rarity_color")
+    .in("guid", def.skinGuids)
+    .eq("rarity", rarity);
+
+  if (skinErr) {
+    console.log("OPEN CASE skins error:", skinErr);
+    return res.status(500).json({ ok: false, error: skinErr.message });
+  }
+
+  if (!skins || skins.length === 0) {
+    return res.status(500).json({ ok: false, error: "no_skins_for_rarity" });
+  }
+
+  const pickedSkin = skins[Math.floor(Math.random() * skins.length)];
+  const wear = Math.round((0.02 + Math.random() * 0.78) * 100000) / 100000; // 0.02-0.8
+  const stattrak = Math.random() < 0.2;
+  const drop = {
+    inventory_item_id: randomUUID(),
+    skinGuid: pickedSkin.guid,
+    weaponOrGloveName: pickedSkin.weapon,
+    skinName: pickedSkin.skin,
+    collection: pickedSkin.collection,
+    rarity: pickedSkin.rarity,
+    rarityColor: pickedSkin.rarity_color,
+    wear,
+    stattrak,
+    stattrakCount: 0,
+    paintSeed: Math.floor(1 + Math.random() * 1000),
+    isNew: true
+  };
+
+  const newItems = Array.isArray(inv?.items) ? [...inv.items, drop] : [drop];
+
+  // обновляем счётчики
+  const updatedCaseCounts = caseCounts && typeof caseCounts === "object"
+    ? { ...caseCounts, [caseId]: Math.max(0, currentCases - 1) }
+    : null;
+
+  const legacyCaseCount = Math.max(0, Number(inv?.case_count ?? 0) - 1);
+  const payload = {
+    telegram_id: String(telegram_id),
+    gold: Number(inv?.gold ?? 0) || 0,
+    case_count: updatedCaseCounts ? legacyCaseCount : Math.max(0, currentCases - 1),
+    key_count: Number(inv?.key_count ?? 0) || 0,
+    items: newItems,
+    updated_at: new Date().toISOString()
+  };
+  if (updatedCaseCounts) payload.case_counts = updatedCaseCounts;
+  if (keyCounts) payload.key_counts = keyCounts;
+
+  const { error: updErr, data: upd } = await supabase
+    .from("user_inventory")
+    .upsert(payload, { onConflict: "telegram_id" })
+    .select()
+    .single();
+
+  if (updErr) {
+    console.log("OPEN CASE upsert error:", updErr);
+    return res.status(500).json({ ok: false, error: updErr.message });
+  }
+
+  return res.json({
+    ok: true,
+    drop,
+    case_count: upd.case_count,
+    case_counts: upd.case_counts ?? null
+  });
+});
+
+// =========================
+// PROFILE: NICKNAME UPDATE
+// =========================
+app.post("/profile/nickname", async (req, res) => {
+  let telegram_id;
+  try {
+    telegram_id = getTelegramId(req);
+  } catch (e) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+
+  const nickname = (req.body?.nickname ?? "").trim();
+  if (nickname.length < 2 || nickname.length > 32) {
+    return res.status(400).json({ ok: false, error: "Nickname length must be 2-32 chars" });
+  }
+
+  const lower = nickname.toLowerCase();
+  const hasBanned = bannedWords.some(w => lower.includes(w));
+  if (hasBanned) {
+    return res.status(400).json({ ok: false, error: "Nickname contains banned words" });
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({ nickname })
+    .eq("id", telegram_id);
+
+  if (error) {
+    console.log("NICKNAME UPDATE ERROR:", error);
+    return res.status(500).json({ ok: false, error: error.message });
+  }
+
+  return res.json({ ok: true, nickname });
+});
+
+app.listen(10000, () => console.log("Server running on port 10000"));
