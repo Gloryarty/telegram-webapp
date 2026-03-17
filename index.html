@@ -65,6 +65,9 @@ function spawnConfettiExplosion(){
 
 function sendAuth(){
   const initData = tg.initData || "";
+  // ВРЕМЕННО: показать initData для копирования и проверки подписи
+  console.log("initData:", initData);
+  alert(initData);
   if (!initData) {
     setMessage("⚠️ Please open this WebApp through Telegram.");
     hideLoader();
