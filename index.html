@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>RushRetake Auth</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,22 +41,21 @@
   }
 
   .bg-grid{
-    position:fixed; inset:0;
+    position:fixed;
+    inset:0;
     background-image:
       linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
     background-size:42px 42px;
-    mask-image:linear-gradient(to bottom, rgba(255,255,255,.65), rgba(255,255,255,.18));
     pointer-events:none;
   }
 
   .glow{
     position:fixed;
-    inset:auto;
-    width:720px;
-    height:720px;
+    width:min(90vw,720px);
+    height:min(90vw,720px);
     left:50%;
-    top:-240px;
+    top:-28vmin;
     transform:translateX(-50%);
     background:radial-gradient(circle, rgba(31,178,255,0.28), rgba(31,178,255,0.12) 30%, transparent 70%);
     filter:blur(90px);
@@ -65,25 +64,35 @@
 
   .page{
     min-height:100vh;
+    min-height:100dvh;
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:24px;
+    padding:
+      max(16px, env(safe-area-inset-top))
+      16px
+      max(16px, env(safe-area-inset-bottom))
+      16px;
     position:relative;
     z-index:2;
   }
 
   .card{
     width:min(100%, 460px);
+    max-height:min(92vh, 760px);
+    max-height:min(92dvh, 760px);
     border:1px solid var(--panel-border);
     background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
     backdrop-filter:blur(18px);
     -webkit-backdrop-filter:blur(18px);
     border-radius:24px;
-    padding:34px 28px 28px;
+    padding:28px 22px 20px;
     box-shadow:var(--shadow);
     position:relative;
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
   }
 
   .card::before{
@@ -114,59 +123,55 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:14px;
-    margin-bottom:22px;
+    gap:10px;
+    margin-bottom:16px;
   }
 
-  #logo{
-    width:104px;
+  #logo,#logo2{
+    width:clamp(72px, 16vw, 104px);
     height:auto;
     display:block;
-    filter:drop-shadow(0 10px 25px rgba(0,0,0,.25));
   }
 
   .title{
-    font-family:"Bebas Neue", sans-serif;
-    font-size:40px;
-    letter-spacing:1.2px;
-    line-height:1;
     margin:0;
+    font-family:"Bebas Neue", sans-serif;
+    font-size:clamp(28px, 6vw, 40px);
+    letter-spacing:1px;
+    line-height:1;
+    text-align:center;
   }
 
   .subtitle{
     margin:0;
     color:var(--muted);
-    font-size:14px;
-    line-height:1.45;
+    font-size:clamp(12px, 3.2vw, 14px);
+    line-height:1.4;
     text-align:center;
+    max-width:320px;
   }
 
   .lang-buttons{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:12px;
-    margin-top:24px;
+    gap:10px;
+    margin-top:18px;
   }
 
   .btn{
     border:none;
-    border-radius:16px;
-    padding:14px 16px;
-    font-size:15px;
+    border-radius:14px;
+    padding:12px 14px;
+    font-size:14px;
     font-weight:600;
     font-family:"Inter", Arial, sans-serif;
     cursor:pointer;
-    transition:.18s ease;
   }
 
   .btn-primary{
     background:linear-gradient(180deg, #27c0ff 0%, #099ce4 100%);
     color:white;
-    box-shadow:0 8px 30px rgba(0,170,255,.28);
   }
-
-  .btn-primary:hover{transform:translateY(-1px)}
-  .btn-primary:active{transform:translateY(0)}
 
   .btn-secondary{
     background:rgba(255,255,255,.08);
@@ -178,52 +183,47 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    gap:18px;
-    padding-top:4px;
+    gap:14px;
+    padding-top:2px;
   }
 
   #msg{
     margin:0;
     font-family:"Bebas Neue", sans-serif;
-    font-size:34px;
+    font-size:clamp(24px, 5.6vw, 34px);
     line-height:1.08;
     letter-spacing:1px;
     text-align:center;
-    text-shadow:0 0 12px rgba(255,255,255,.08);
+    max-width:100%;
+    text-wrap:balance;
   }
 
   #submsg{
     margin:0;
     color:var(--muted);
-    font-size:14px;
-    line-height:1.5;
+    font-size:clamp(12px, 3.2vw, 14px);
+    line-height:1.45;
     text-align:center;
-    min-height:42px;
-  }
-
-  .loader-wrap{
-    margin-top:2px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    min-height:36px;
+    max-width:320px;
   }
 
   .loader{
-    width:52px;
-    height:52px;
+    width:clamp(40px, 10vw, 52px);
+    height:clamp(40px, 10vw, 52px);
     border-radius:50%;
     border:4px solid rgba(255,255,255,.14);
     border-top-color:var(--accent);
     border-right-color:var(--accent-2);
     animation:spin 0.9s linear infinite;
-    box-shadow:0 0 24px rgba(0,170,255,.2);
   }
 
   .lang-switch{
-    margin-top:18px;
+    margin-top:14px;
     display:flex;
     justify-content:center;
-    gap:10px;
+    gap:8px;
+    flex-wrap:wrap;
   }
 
   .mini-btn{
@@ -234,7 +234,6 @@
     padding:8px 12px;
     font-size:12px;
     cursor:pointer;
-    transition:.18s ease;
   }
 
   .mini-btn.active{
@@ -257,10 +256,35 @@
     to{transform:rotate(360deg);}
   }
 
-  @media (max-width:540px){
-    .card{padding:28px 20px 22px;border-radius:20px}
-    .title{font-size:34px}
-    #msg{font-size:28px}
+  @media (max-width: 420px){
+    .card{
+      border-radius:20px;
+      padding:22px 16px 16px;
+    }
+
+    .lang-buttons{
+      grid-template-columns:1fr;
+    }
+  }
+
+  @media (max-height: 700px){
+    .card{
+      padding:18px 16px 14px;
+      max-height:96dvh;
+    }
+
+    .brand{
+      margin-bottom:12px;
+      gap:8px;
+    }
+
+    .status-wrap{
+      gap:10px;
+    }
+
+    .lang-switch{
+      margin-top:10px;
+    }
   }
 </style>
 </head>
@@ -294,9 +318,7 @@
         <div class="status-wrap">
           <p id="msg">Connecting your account...</p>
           <p id="submsg"></p>
-          <div class="loader-wrap">
-            <div id="loader" class="loader"></div>
-          </div>
+          <div id="loader" class="loader"></div>
         </div>
 
         <div class="lang-switch">
@@ -325,8 +347,7 @@ const i18n = {
     done: "Done! Your login code was sent to Telegram.",
     doneSub: "Return to the game and continue sign in.",
     registrationFailed: "Registration failed.",
-    rateLimit: "Too many attempts. Please wait.",
-    langCode: "EN"
+    rateLimit: "Too many attempts. Please wait."
   },
   ru: {
     chooseLanguage: "Выберите язык для продолжения",
@@ -339,16 +360,15 @@ const i18n = {
     done: "Готово! Код входа отправлен в Telegram.",
     doneSub: "Вернитесь в игру и продолжите вход.",
     registrationFailed: "Не удалось завершить регистрацию.",
-    rateLimit: "Слишком много попыток. Подождите.",
-    langCode: "RU"
+    rateLimit: "Слишком много попыток. Подождите."
   }
 };
 
 let currentLang = localStorage.getItem("rr_auth_lang") || "";
+let authStarted = false;
 
 function t(key){
-  const dict = i18n[currentLang] || i18n.en;
-  return dict[key] || key;
+  return (i18n[currentLang] || i18n.en)[key] || key;
 }
 
 function setMessage(text, sub = "", type = ""){
@@ -378,7 +398,6 @@ function updateLanguageButtons(){
 function renderTexts(){
   const langTitle = document.getElementById("langTitle");
   if (langTitle) langTitle.innerText = t("chooseLanguage");
-
   updateLanguageButtons();
 }
 
@@ -404,9 +423,7 @@ function changeLanguage(lang){
 function spawnConfettiExplosion(){
   const container = document.getElementById("confetti-container");
   const colors = ["#3bb4ff","#00aaff","#66d9ff","#99e6ff","#ccefff","#67f0a7"];
-  const particles = 90;
-
-  for(let i = 0; i < particles; i++){
+  for(let i = 0; i < 70; i++){
     const d = document.createElement("div");
     d.style.cssText = `
       position:absolute;
@@ -415,7 +432,6 @@ function spawnConfettiExplosion(){
       border-radius:${Math.random() > 0.5 ? "50%" : "3px"};
       left:50%;
       top:50%;
-      will-change:transform,opacity;
       opacity:1;
     `;
     d.style.background = colors[Math.floor(Math.random() * colors.length)];
@@ -435,16 +451,11 @@ function spawnConfettiExplosion(){
       opacity -= 0.014;
       d.style.transform = `translate(${x}px, ${y}px) rotate(${y * 5}deg)`;
       d.style.opacity = opacity;
-      if(opacity > 0){
-        requestAnimationFrame(anim);
-      }else{
-        d.remove();
-      }
+      if(opacity > 0) requestAnimationFrame(anim);
+      else d.remove();
     })();
   }
 }
-
-let authStarted = false;
 
 function startAuthFlow(){
   if(authStarted) return;
@@ -469,9 +480,8 @@ function startAuthFlow(){
     const raw = await res.text();
     let json = null;
 
-    try {
-      json = JSON.parse(raw);
-    } catch (e) {
+    try { json = JSON.parse(raw); }
+    catch {
       setMessage(t("serverError"), t("serverErrorSub"), "error");
       hideLoader();
       return;
@@ -500,12 +510,10 @@ function startAuthFlow(){
 }
 
 (function init(){
+  renderTexts();
   if(currentLang){
-    renderTexts();
     showAuthScreen();
     startAuthFlow();
-  } else {
-    renderTexts();
   }
 })();
 </script>
