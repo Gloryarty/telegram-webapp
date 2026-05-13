@@ -304,8 +304,8 @@
         </div>
 
         <div class="lang-buttons">
-          <button class="btn btn-primary" onclick="selectLanguage('en')">English</button>
-          <button class="btn btn-secondary" onclick="selectLanguage('ru')">Русский</button>
+          <button id="langSelectEn" type="button" class="btn btn-primary">English</button>
+          <button id="langSelectRu" type="button" class="btn btn-secondary">Русский</button>
         </div>
       </div>
 
@@ -322,8 +322,8 @@
         </div>
 
         <div class="lang-switch">
-          <button id="langEnBtn" class="mini-btn" onclick="changeLanguage('en')">EN</button>
-          <button id="langRuBtn" class="mini-btn" onclick="changeLanguage('ru')">RU</button>
+          <button id="langEnBtn" type="button" class="mini-btn">EN</button>
+          <button id="langRuBtn" type="button" class="mini-btn">RU</button>
         </div>
       </div>
     </div>
@@ -332,8 +332,13 @@
   <div id="confetti-container"></div>
 
 <script>
-const tg = window.Telegram.WebApp;
-tg.ready();
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) {
+  try {
+    tg.ready();
+    tg.expand();
+  } catch (_) {}
+}
 
 const i18n = {
   en: {
@@ -374,6 +379,7 @@ function t(key){
 function setMessage(text, sub = "", type = ""){
   const msg = document.getElementById("msg");
   const submsg = document.getElementById("submsg");
+  if (!msg || !submsg) return;
   msg.innerText = text;
   submsg.innerText = sub;
   msg.classList.remove("success", "error");
@@ -391,8 +397,10 @@ function showLoader(){
 }
 
 function updateLanguageButtons(){
-  document.getElementById("langEnBtn").classList.toggle("active", currentLang === "en");
-  document.getElementById("langRuBtn").classList.toggle("active", currentLang === "ru");
+  const enBtn = document.getElementById("langEnBtn");
+  const ruBtn = document.getElementById("langRuBtn");
+  if (enBtn) enBtn.classList.toggle("active", currentLang === "en");
+  if (ruBtn) ruBtn.classList.toggle("active", currentLang === "ru");
 }
 
 function renderTexts(){
@@ -402,8 +410,10 @@ function renderTexts(){
 }
 
 function showAuthScreen(){
-  document.getElementById("langScreen").classList.add("hidden");
-  document.getElementById("authScreen").classList.remove("hidden");
+  const langScreen = document.getElementById("langScreen");
+  const authScreen = document.getElementById("authScreen");
+  if (langScreen) langScreen.classList.add("hidden");
+  if (authScreen) authScreen.classList.remove("hidden");
 }
 
 function selectLanguage(lang){
@@ -422,6 +432,7 @@ function changeLanguage(lang){
 
 function spawnConfettiExplosion(){
   const container = document.getElementById("confetti-container");
+  if (!container) return;
   const colors = ["#3bb4ff","#00aaff","#66d9ff","#99e6ff","#ccefff","#67f0a7"];
   for(let i = 0; i < 70; i++){
     const d = document.createElement("div");
@@ -457,65 +468,90 @@ function spawnConfettiExplosion(){
   }
 }
 
-function startAuthFlow(){
+async function startAuthFlow(){
   if(authStarted) return;
   authStarted = true;
 
   setMessage(t("connecting"), t("connectingSub"));
   showLoader();
 
-  const initData = tg.initData || "";
+  const initData = tg ? (tg.initData || "") : "";
   if (!initData){
     setMessage(t("openInTelegram"), t("openInTelegramSub"), "error");
     hideLoader();
+    authStarted = false;
     return;
   }
 
-  fetch("https://telegram-auth-70lq.onrender.com/auth", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ initData })
-  })
-  .then(async res => {
+  try {
+    const res = await fetch("https://telegram-auth-70lq.onrender.com/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ initData })
+    });
+
     const raw = await res.text();
     let json = null;
 
-    try { json = JSON.parse(raw); }
-    catch {
+    try {
+      json = JSON.parse(raw);
+    } catch {
       setMessage(t("serverError"), t("serverErrorSub"), "error");
       hideLoader();
+      authStarted = false;
       return;
     }
 
     if (res.status === 429) {
       setMessage("❌ " + (json?.message || t("rateLimit")), t("serverErrorSub"), "error");
       hideLoader();
+      authStarted = false;
       return;
     }
 
     if (!json.ok) {
       setMessage("❌ " + (json.message || json.error || t("registrationFailed")), t("serverErrorSub"), "error");
       hideLoader();
+      authStarted = false;
       return;
     }
 
     setMessage("✓ " + t("done"), t("doneSub"), "success");
     hideLoader();
     spawnConfettiExplosion();
-  })
-  .catch(() => {
+  } catch {
     setMessage(t("serverError"), t("serverErrorSub"), "error");
     hideLoader();
-  });
+    authStarted = false;
+  }
 }
 
-(function init(){
+function bindEvents(){
+  const langSelectEn = document.getElementById("langSelectEn");
+  const langSelectRu = document.getElementById("langSelectRu");
+  const langEnBtn = document.getElementById("langEnBtn");
+  const langRuBtn = document.getElementById("langRuBtn");
+
+  if (langSelectEn) langSelectEn.addEventListener("click", () => selectLanguage("en"));
+  if (langSelectRu) langSelectRu.addEventListener("click", () => selectLanguage("ru"));
+  if (langEnBtn) langEnBtn.addEventListener("click", () => changeLanguage("en"));
+  if (langRuBtn) langRuBtn.addEventListener("click", () => changeLanguage("ru"));
+}
+
+function init(){
+  bindEvents();
   renderTexts();
   if(currentLang){
     showAuthScreen();
     startAuthFlow();
   }
-})();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
+}
 </script>
 </body>
 </html>
