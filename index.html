@@ -369,7 +369,7 @@ const i18n = {
   }
 };
 
-let currentLang = localStorage.getItem("rr_auth_lang") || "";
+let currentLang = "";
 let authStarted = false;
 
 function t(key){
@@ -418,7 +418,6 @@ function showAuthScreen(){
 
 function selectLanguage(lang){
   currentLang = lang;
-  localStorage.setItem("rr_auth_lang", lang);
   renderTexts();
   showAuthScreen();
   startAuthFlow();
@@ -426,7 +425,6 @@ function selectLanguage(lang){
 
 function changeLanguage(lang){
   currentLang = lang;
-  localStorage.setItem("rr_auth_lang", lang);
   renderTexts();
 }
 
@@ -540,11 +538,8 @@ function bindEvents(){
 
 function init(){
   bindEvents();
+  currentLang = "en";
   renderTexts();
-  if(currentLang){
-    showAuthScreen();
-    startAuthFlow();
-  }
 }
 
 if (document.readyState === "loading") {
