@@ -7,23 +7,25 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
   :root{
-    --bg-top:#0d2a3d;
-    --bg-mid:#0d1722;
-    --bg-bottom:#07090d;
-    --panel:rgba(255,255,255,0.07);
-    --panel-border:rgba(255,255,255,0.12);
-    --text:#ffffff;
-    --muted:rgba(255,255,255,0.72);
-    --accent:#19b4ff;
-    --accent-2:#64d7ff;
-    --danger:#ff5f73;
-    --success:#67f0a7;
-    --shadow:0 20px 60px rgba(0,0,0,0.45);
+    --bg-0:#0d1015;
+    --bg-1:#12171e;
+    --bg-2:#1b212b;
+    --panel:#181d25;
+    --panel-2:#212835;
+    --line:rgba(255,255,255,0.08);
+    --line-strong:rgba(255,255,255,0.14);
+    --text:#f5f7fb;
+    --muted:#98a3b5;
+    --accent:#f2b54a;
+    --accent-2:#ffd17a;
+    --success:#84f2a0;
+    --danger:#ff6b78;
+    --shadow:0 22px 80px rgba(0,0,0,0.5);
   }
 
   *{box-sizing:border-box}
@@ -31,35 +33,33 @@
 
   body{
     background:
-      radial-gradient(circle at 20% 15%, rgba(0,165,255,.22), transparent 28%),
-      radial-gradient(circle at 80% 20%, rgba(0,120,255,.14), transparent 24%),
-      radial-gradient(circle at 50% 100%, rgba(0,0,0,.45), transparent 35%),
-      linear-gradient(180deg,var(--bg-top) 0%,var(--bg-mid) 45%,var(--bg-bottom) 100%);
+      radial-gradient(circle at top center, rgba(242,181,74,0.08), transparent 26%),
+      linear-gradient(180deg, #161b23 0%, #10141b 42%, #0b0e13 100%);
     color:var(--text);
     font-family:"Inter", Arial, sans-serif;
     overflow:hidden;
   }
 
-  .bg-grid{
+  .noise,
+  .grid{
     position:fixed;
     inset:0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size:42px 42px;
     pointer-events:none;
   }
 
-  .glow{
-    position:fixed;
-    width:min(90vw,720px);
-    height:min(90vw,720px);
-    left:50%;
-    top:-28vmin;
-    transform:translateX(-50%);
-    background:radial-gradient(circle, rgba(31,178,255,0.28), rgba(31,178,255,0.12) 30%, transparent 70%);
-    filter:blur(90px);
-    pointer-events:none;
+  .grid{
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:32px 32px;
+    mask-image:linear-gradient(180deg, rgba(255,255,255,0.55), transparent 85%);
+  }
+
+  .noise{
+    opacity:.08;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.7) 0.6px, transparent 0.7px);
+    background-size:7px 7px;
   }
 
   .page{
@@ -69,176 +69,255 @@
     align-items:center;
     justify-content:center;
     padding:
-      max(16px, env(safe-area-inset-top))
-      16px
-      max(16px, env(safe-area-inset-bottom))
-      16px;
+      max(18px, env(safe-area-inset-top))
+      18px
+      max(18px, env(safe-area-inset-bottom))
+      18px;
     position:relative;
     z-index:2;
   }
 
-  .card{
-    width:min(100%, 460px);
-    max-height:min(92vh, 760px);
-    max-height:min(92dvh, 760px);
-    border:1px solid var(--panel-border);
-    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-    backdrop-filter:blur(18px);
-    -webkit-backdrop-filter:blur(18px);
-    border-radius:24px;
-    padding:28px 22px 20px;
+  .frame{
+    width:min(100%, 480px);
+    border:1px solid var(--line-strong);
+    background:linear-gradient(180deg, rgba(28,34,44,.96), rgba(18,22,29,.98));
+    border-radius:0;
     box-shadow:var(--shadow);
-    position:relative;
     overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
+    position:relative;
   }
 
-  .card::before{
+  .frame::before{
     content:"";
     position:absolute;
     inset:0;
-    background:linear-gradient(135deg, rgba(255,255,255,.08), transparent 45%);
+    border:1px solid rgba(255,255,255,0.03);
     pointer-events:none;
   }
 
-  .top-line{
-    position:absolute;
-    top:0; left:0; right:0;
-    height:3px;
-    background:linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
-    opacity:.95;
+  .topbar{
+    height:6px;
+    background:linear-gradient(90deg, #7d5d22 0%, var(--accent) 50%, #7d5d22 100%);
   }
 
-  .lang-screen,
-  .auth-screen{
-    position:relative;
-    z-index:2;
+  .content{
+    padding:22px 20px 18px;
   }
 
   .hidden{display:none !important;}
 
   .brand{
     display:flex;
-    flex-direction:column;
     align-items:center;
-    gap:10px;
-    margin-bottom:16px;
+    gap:14px;
+    margin-bottom:20px;
+  }
+
+  .logo-wrap{
+    width:64px;
+    height:64px;
+    flex:0 0 64px;
+    border:1px solid var(--line-strong);
+    background:linear-gradient(180deg, #202734, #151a22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
   }
 
   #logo,#logo2{
-    width:clamp(72px, 16vw, 104px);
-    height:auto;
+    max-width:100%;
+    max-height:100%;
     display:block;
+  }
+
+  .brand-copy{
+    min-width:0;
+    flex:1;
+  }
+
+  .eyebrow{
+    margin:0 0 4px 0;
+    color:var(--accent);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.18em;
+    text-transform:uppercase;
   }
 
   .title{
     margin:0;
-    font-family:"Bebas Neue", sans-serif;
-    font-size:clamp(28px, 6vw, 40px);
-    letter-spacing:1px;
+    font-family:"Oswald", sans-serif;
+    font-size:34px;
     line-height:1;
-    text-align:center;
+    letter-spacing:.03em;
+    text-transform:uppercase;
   }
 
   .subtitle{
-    margin:0;
+    margin:10px 0 0 0;
     color:var(--muted);
-    font-size:clamp(12px, 3.2vw, 14px);
-    line-height:1.4;
-    text-align:center;
-    max-width:320px;
+    font-size:13px;
+    line-height:1.45;
+  }
+
+  .section{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  }
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.025);
+  }
+
+  .section-title{
+    margin:0;
+    font-family:"Oswald", sans-serif;
+    font-size:20px;
+    line-height:1;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+  .section-tag{
+    color:var(--muted);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
   }
 
   .lang-buttons{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:10px;
-    margin-top:18px;
+    gap:12px;
+    padding:14px;
   }
 
   .btn{
-    border:none;
-    border-radius:14px;
+    appearance:none;
+    border:1px solid var(--line-strong);
+    border-radius:0;
+    min-height:52px;
     padding:12px 14px;
-    font-size:14px;
-    font-weight:600;
-    font-family:"Inter", Arial, sans-serif;
+    font-family:"Oswald", sans-serif;
+    font-size:20px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
     cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+
+  .btn:active{
+    transform:translateY(1px);
   }
 
   .btn-primary{
-    background:linear-gradient(180deg, #27c0ff 0%, #099ce4 100%);
-    color:white;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent));
+    color:#17130b;
+    border-color:#c69339;
   }
 
   .btn-secondary{
-    background:rgba(255,255,255,.08);
-    color:#fff;
-    border:1px solid rgba(255,255,255,.1);
+    background:linear-gradient(180deg, #273140, #1a2029);
+    color:var(--text);
+  }
+
+  .auth-screen .section{
+    padding:18px 16px;
   }
 
   .status-wrap{
     display:flex;
     flex-direction:column;
-    align-items:center;
-    gap:14px;
-    padding-top:2px;
+    align-items:flex-start;
+    gap:12px;
   }
 
   #msg{
     margin:0;
-    font-family:"Bebas Neue", sans-serif;
-    font-size:clamp(24px, 5.6vw, 34px);
-    line-height:1.08;
-    letter-spacing:1px;
-    text-align:center;
-    max-width:100%;
-    text-wrap:balance;
+    font-family:"Oswald", sans-serif;
+    font-size:28px;
+    line-height:1.02;
+    text-transform:uppercase;
+    letter-spacing:.03em;
   }
 
   #submsg{
     margin:0;
     color:var(--muted);
-    font-size:clamp(12px, 3.2vw, 14px);
+    font-size:13px;
     line-height:1.45;
-    text-align:center;
-    min-height:36px;
-    max-width:320px;
+    min-height:38px;
+  }
+
+  .loader-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
   }
 
   .loader{
-    width:clamp(40px, 10vw, 52px);
-    height:clamp(40px, 10vw, 52px);
-    border-radius:50%;
-    border:4px solid rgba(255,255,255,.14);
+    width:28px;
+    height:28px;
+    border:3px solid rgba(255,255,255,.12);
     border-top-color:var(--accent);
-    border-right-color:var(--accent-2);
-    animation:spin 0.9s linear infinite;
+    border-radius:50%;
+    animation:spin .85s linear infinite;
+    flex:0 0 auto;
+  }
+
+  .loader-bar{
+    height:6px;
+    flex:1;
+    background:rgba(255,255,255,.08);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .loader-bar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    width:42%;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation:scan 1.2s linear infinite;
   }
 
   .lang-switch{
     margin-top:14px;
     display:flex;
-    justify-content:center;
     gap:8px;
     flex-wrap:wrap;
   }
 
   .mini-btn{
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(255,255,255,.06);
-    color:#fff;
-    border-radius:12px;
+    appearance:none;
+    border:1px solid var(--line-strong);
+    background:#1f2530;
+    color:var(--text);
+    border-radius:0;
+    min-width:58px;
+    min-height:40px;
     padding:8px 12px;
     font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
     cursor:pointer;
   }
 
   .mini-btn.active{
-    background:rgba(25,180,255,.18);
-    border-color:rgba(25,180,255,.45);
+    color:#17130b;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent));
+    border-color:#c69339;
   }
 
   .success{color:var(--success)}
@@ -256,74 +335,100 @@
     to{transform:rotate(360deg);}
   }
 
+  @keyframes scan{
+    0%{transform:translateX(-120%)}
+    100%{transform:translateX(320%)}
+  }
+
   @media (max-width: 420px){
-    .card{
-      border-radius:20px;
-      padding:22px 16px 16px;
+    .content{
+      padding:18px 14px 14px;
+    }
+
+    .brand{
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .logo-wrap{
+      width:56px;
+      height:56px;
+      flex-basis:56px;
+    }
+
+    .title{
+      font-size:29px;
     }
 
     .lang-buttons{
       grid-template-columns:1fr;
     }
-  }
 
-  @media (max-height: 700px){
-    .card{
-      padding:18px 16px 14px;
-      max-height:96dvh;
-    }
-
-    .brand{
-      margin-bottom:12px;
-      gap:8px;
-    }
-
-    .status-wrap{
-      gap:10px;
-    }
-
-    .lang-switch{
-      margin-top:10px;
+    #msg{
+      font-size:24px;
     }
   }
 </style>
 </head>
 <body>
-  <div class="bg-grid"></div>
-  <div class="glow"></div>
+  <div class="grid"></div>
+  <div class="noise"></div>
 
   <div class="page">
-    <div class="card">
-      <div class="top-line"></div>
+    <div class="frame">
+      <div class="topbar"></div>
+      <div class="content">
 
-      <div id="langScreen" class="lang-screen">
-        <div class="brand">
-          <img id="logo" src="logo.png" alt="Logo">
-          <h1 class="title">RushRetake</h1>
-          <p id="langTitle" class="subtitle">Choose your language to continue</p>
+        <div id="langScreen" class="lang-screen">
+          <div class="brand">
+            <div class="logo-wrap">
+              <img id="logo" src="logo.png" alt="Logo">
+            </div>
+            <div class="brand-copy">
+              <p class="eyebrow">Telegram Auth</p>
+              <h1 class="title">RushRetake</h1>
+              <p id="langTitle" class="subtitle">Choose your language to continue</p>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head">
+              <h2 class="section-title">Language</h2>
+              <span class="section-tag">Select</span>
+            </div>
+            <div class="lang-buttons">
+              <button id="langSelectEn" type="button" class="btn btn-primary">English</button>
+              <button id="langSelectRu" type="button" class="btn btn-secondary">Русский</button>
+            </div>
+          </div>
         </div>
 
-        <div class="lang-buttons">
-          <button id="langSelectEn" type="button" class="btn btn-primary">English</button>
-          <button id="langSelectRu" type="button" class="btn btn-secondary">Русский</button>
-        </div>
-      </div>
+        <div id="authScreen" class="auth-screen hidden">
+          <div class="brand">
+            <div class="logo-wrap">
+              <img id="logo2" src="logo.png" alt="Logo">
+            </div>
+            <div class="brand-copy">
+              <p class="eyebrow">Telegram Auth</p>
+              <h1 class="title">RushRetake</h1>
+            </div>
+          </div>
 
-      <div id="authScreen" class="auth-screen hidden">
-        <div class="brand">
-          <img id="logo2" src="logo.png" alt="Logo">
-          <h1 class="title">RushRetake</h1>
-        </div>
+          <div class="section">
+            <div class="status-wrap">
+              <p id="msg">Connecting your account...</p>
+              <p id="submsg"></p>
+              <div class="loader-row">
+                <div id="loader" class="loader"></div>
+                <div class="loader-bar"></div>
+              </div>
+            </div>
+          </div>
 
-        <div class="status-wrap">
-          <p id="msg">Connecting your account...</p>
-          <p id="submsg"></p>
-          <div id="loader" class="loader"></div>
-        </div>
-
-        <div class="lang-switch">
-          <button id="langEnBtn" type="button" class="mini-btn">EN</button>
-          <button id="langRuBtn" type="button" class="mini-btn">RU</button>
+          <div class="lang-switch">
+            <button id="langEnBtn" type="button" class="mini-btn">EN</button>
+            <button id="langRuBtn" type="button" class="mini-btn">RU</button>
+          </div>
         </div>
       </div>
     </div>
@@ -431,14 +536,14 @@ function changeLanguage(lang){
 function spawnConfettiExplosion(){
   const container = document.getElementById("confetti-container");
   if (!container) return;
-  const colors = ["#3bb4ff","#00aaff","#66d9ff","#99e6ff","#ccefff","#67f0a7"];
-  for(let i = 0; i < 70; i++){
+  const colors = ["#f2b54a","#ffd17a","#ffffff","#84f2a0"];
+  for(let i = 0; i < 64; i++){
     const d = document.createElement("div");
     d.style.cssText = `
       position:absolute;
-      width:${6 + Math.random() * 8}px;
-      height:${6 + Math.random() * 8}px;
-      border-radius:${Math.random() > 0.5 ? "50%" : "3px"};
+      width:${5 + Math.random() * 7}px;
+      height:${5 + Math.random() * 7}px;
+      border-radius:${Math.random() > 0.55 ? "50%" : "2px"};
       left:50%;
       top:50%;
       opacity:1;
