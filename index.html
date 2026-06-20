@@ -7,622 +7,435 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-  @font-face {
-    font-family: "Stratum2";
-    src: url("fonts/Stratum2.woff2") format("woff2");
-    font-weight: 400 800;
-    font-display: swap;
+  :root{
+    --bg-0:#0d1015;
+    --bg-1:#12171e;
+    --bg-2:#1b212b;
+    --panel:#181d25;
+    --panel-2:#212835;
+    --line:rgba(255,255,255,0.08);
+    --line-strong:rgba(255,255,255,0.14);
+    --text:#f5f7fb;
+    --muted:#98a3b5;
+    --accent:#f2b54a;
+    --accent-2:#ffd17a;
+    --success:#84f2a0;
+    --danger:#ff6b78;
+    --shadow:0 22px 80px rgba(0,0,0,0.5);
   }
 
-  :root {
-    --bg: #08090b;
-    --steel-0: #101216;
-    --steel-1: #171b20;
-    --steel-2: #222832;
-    --steel-3: #303846;
-    --text: #f3eee4;
-    --muted: #9aa2aa;
-    --faint: #6d747d;
-    --gold: #f0b64d;
-    --gold-2: #ffd27a;
-    --amber-dark: #7b4b16;
-    --red: #e65445;
-    --green: #8ff0a4;
-    --line: rgba(255,255,255,.11);
-    --line-strong: rgba(255,255,255,.2);
-    --shadow: 0 34px 120px rgba(0,0,0,.72);
-    --font-display: "Stratum2", "Rajdhani", "Oswald", sans-serif;
-    --font-ui: "Rajdhani", "Oswald", sans-serif;
-  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
 
-  * { box-sizing: border-box; }
-
-  html,
-  body {
-    margin: 0;
-    min-height: 100%;
-  }
-
-  body {
-    min-height: 100vh;
-    min-height: 100dvh;
-    color: var(--text);
-    font-family: var(--font-ui);
-    background: var(--bg);
-    overflow: hidden;
-  }
-
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
+  body{
     background:
-      linear-gradient(90deg, rgba(0,0,0,.9), rgba(0,0,0,.24) 45%, rgba(0,0,0,.88)),
-      radial-gradient(circle at 72% 28%, rgba(240,182,77,.24), transparent 28%),
-      radial-gradient(circle at 24% 72%, rgba(230,84,69,.12), transparent 34%),
-      linear-gradient(135deg, #14171c 0%, #090a0d 46%, #17120b 100%);
-    z-index: -5;
+      radial-gradient(circle at top center, rgba(242,181,74,0.08), transparent 26%),
+      linear-gradient(180deg, #161b23 0%, #10141b 42%, #0b0e13 100%);
+    color:var(--text);
+    font-family:"Inter", Arial, sans-serif;
+    overflow:hidden;
   }
 
-  body::after {
-    content: "";
-    position: fixed;
-    inset: -10%;
-    background:
-      linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,.045) 42.2% 42.8%, transparent 43%),
-      linear-gradient(115deg, transparent 0 54%, rgba(240,182,77,.09) 54.2% 54.6%, transparent 55%),
-      repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, transparent 1px 5px);
-    opacity: .42;
-    transform: rotate(-2deg);
-    z-index: -4;
-    pointer-events: none;
+  .noise,
+  .grid{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
   }
 
-  .scene {
-    position: fixed;
-    inset: 0;
-    z-index: -3;
-    pointer-events: none;
-    overflow: hidden;
+  .grid{
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:32px 32px;
+    mask-image:linear-gradient(180deg, rgba(255,255,255,0.55), transparent 85%);
   }
 
-  .scene::before {
-    content: "RUSHRETAKE";
-    position: absolute;
-    right: -4vw;
-    top: 7vh;
-    font-family: var(--font-display);
-    font-size: clamp(74px, 15vw, 230px);
-    font-weight: 700;
-    line-height: .78;
-    letter-spacing: .03em;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,.055);
-    text-transform: uppercase;
-    transform: skewX(-10deg);
+  .noise{
+    opacity:.08;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.7) 0.6px, transparent 0.7px);
+    background-size:7px 7px;
   }
 
-  .scene::after {
-    content: "";
-    position: absolute;
-    right: -180px;
-    bottom: -120px;
-    width: min(76vw, 860px);
-    height: min(46vw, 520px);
-    background:
-      linear-gradient(12deg, transparent 0 18%, rgba(255,255,255,.16) 18.3% 19.2%, transparent 19.4%),
-      linear-gradient(12deg, transparent 0 36%, rgba(240,182,77,.58) 36.3% 37.4%, transparent 37.6%),
-      linear-gradient(12deg, transparent 0 50%, rgba(255,255,255,.11) 50.2% 51.2%, transparent 51.5%),
-      linear-gradient(90deg, transparent 0 20%, rgba(255,255,255,.09) 20.4% 22%, transparent 22.4%),
-      linear-gradient(180deg, #2f3642, #11151b);
-    clip-path: polygon(2% 48%, 21% 38%, 62% 38%, 71% 28%, 100% 30%, 92% 43%, 75% 49%, 67% 61%, 28% 61%, 18% 72%, 0 70%);
-    opacity: .22;
-    filter: blur(.2px) drop-shadow(0 28px 60px rgba(0,0,0,.8));
-    transform: rotate(-8deg);
-  }
-
-  .grain,
-  .vignette,
-  .scanlines {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .grain {
-    z-index: -2;
-    opacity: .11;
-    background-image: radial-gradient(rgba(255,255,255,.9) .6px, transparent .7px);
-    background-size: 6px 6px;
-    mix-blend-mode: overlay;
-  }
-
-  .scanlines {
-    z-index: -1;
-    background: repeating-linear-gradient(180deg, rgba(255,255,255,.025) 0 1px, transparent 1px 4px);
-    opacity: .23;
-  }
-
-  .vignette {
-    z-index: 0;
-    box-shadow: inset 0 0 180px rgba(0,0,0,.9);
-  }
-
-  .page {
-    min-height: 100vh;
-    min-height: 100dvh;
-    position: relative;
-    z-index: 2;
-    display: grid;
-    place-items: center;
+  .page{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     padding:
-      max(20px, env(safe-area-inset-top))
+      max(18px, env(safe-area-inset-top))
       18px
-      max(20px, env(safe-area-inset-bottom));
+      max(18px, env(safe-area-inset-bottom))
+      18px;
+    position:relative;
+    z-index:2;
   }
 
-  .frame {
-    width: min(100%, 520px);
-    position: relative;
+  .frame{
+    width:min(100%, 480px);
+    border:1px solid var(--line-strong);
+    background:linear-gradient(180deg, rgba(28,34,44,.96), rgba(18,22,29,.98));
+    border-radius:0;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+  }
+
+  .frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    border:1px solid rgba(255,255,255,0.03);
+    pointer-events:none;
+  }
+
+  .topbar{
+    height:6px;
+    background:linear-gradient(90deg, #7d5d22 0%, var(--accent) 50%, #7d5d22 100%);
+  }
+
+  .content{
+    padding:22px 20px 18px;
+  }
+
+  .hidden{display:none !important;}
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:20px;
+  }
+
+  .logo-wrap{
+    width:64px;
+    height:64px;
+    flex:0 0 64px;
+    border:1px solid var(--line-strong);
+    background:linear-gradient(180deg, #202734, #151a22);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px;
+  }
+
+  #logo,#logo2{
+    max-width:100%;
+    max-height:100%;
+    display:block;
+  }
+
+  .brand-copy{
+    min-width:0;
+    flex:1;
+  }
+
+  .eyebrow{
+    margin:0 0 4px 0;
+    color:var(--accent);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+  }
+
+  .title{
+    margin:0;
+    font-family:"Oswald", sans-serif;
+    font-size:34px;
+    line-height:1;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+  }
+
+  .subtitle{
+    margin:10px 0 0 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.45;
+  }
+
+  .section{
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+  }
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    background:rgba(255,255,255,.025);
+  }
+
+  .section-title{
+    margin:0;
+    font-family:"Oswald", sans-serif;
+    font-size:20px;
+    line-height:1;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+  }
+
+  .section-tag{
+    color:var(--muted);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+  }
+
+  .lang-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    padding:14px;
+  }
+
+  .btn{
+    appearance:none;
+    border:1px solid var(--line-strong);
+    border-radius:0;
+    min-height:52px;
+    padding:12px 14px;
+    font-family:"Oswald", sans-serif;
+    font-size:20px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+
+  .btn:active{
+    transform:translateY(1px);
+  }
+
+  .btn-primary{
+    background:linear-gradient(180deg, var(--accent-2), var(--accent));
+    color:#17130b;
+    border-color:#c69339;
+  }
+
+  .btn-secondary{
+    background:linear-gradient(180deg, #273140, #1a2029);
+    color:var(--text);
+  }
+
+  .auth-screen .section{
+    padding:18px 16px;
+  }
+
+  .status-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  #msg{
+    margin:0;
+    font-family:"Oswald", sans-serif;
+    font-size:28px;
+    line-height:1.02;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+
+  #submsg{
+    margin:0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.45;
+    min-height:38px;
+  }
+
+  .login-code-panel{
+    width:100%;
+    padding:14px;
+    border:1px solid rgba(242,181,74,.38);
     background:
-      linear-gradient(135deg, rgba(255,255,255,.11), transparent 18%),
-      linear-gradient(180deg, rgba(32,38,47,.96), rgba(12,14,18,.98));
-    border: 1px solid var(--line-strong);
-    box-shadow: var(--shadow);
-    isolation: isolate;
-    transform: translateY(0);
-    animation: frameIn .7s cubic-bezier(.2,.9,.2,1) both;
+      linear-gradient(135deg, rgba(242,181,74,.12), transparent 42%),
+      rgba(0,0,0,.22);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 14px 36px rgba(0,0,0,.26);
   }
 
-  .frame::before {
-    content: "";
-    position: absolute;
-    inset: 8px;
-    border: 1px solid rgba(255,255,255,.055);
-    pointer-events: none;
-    z-index: -1;
+  .login-code-label{
+    margin:0 0 8px;
+    color:var(--muted);
+    font-family:"Oswald", sans-serif;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.16em;
+    text-transform:uppercase;
   }
 
-  .frame::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(90deg, transparent, rgba(240,182,77,.22), transparent),
-      linear-gradient(180deg, rgba(255,255,255,.055), transparent 34%);
-    opacity: .55;
-    pointer-events: none;
-    clip-path: polygon(0 0, 100% 0, 100% 7px, 0 7px);
+  .login-code{
+    margin:0 0 12px;
+    padding:12px 10px;
+    border:1px solid rgba(255,255,255,.12);
+    background:rgba(0,0,0,.28);
+    color:var(--accent-2);
+    font-family:"Oswald", monospace;
+    font-size:clamp(24px, 7vw, 38px);
+    font-weight:700;
+    line-height:1;
+    letter-spacing:.08em;
+    text-align:center;
+    user-select:all;
+    word-break:break-word;
   }
 
-  .topbar {
-    height: 8px;
-    background:
-      linear-gradient(90deg, var(--red) 0 14%, var(--gold) 14% 84%, #ffffff 84% 88%, var(--steel-3) 88%);
+  .copy-code-btn{
+    width:100%;
+    min-height:42px;
+    border:1px solid #c69339;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent));
+    color:#17130b;
+    font-family:"Oswald", sans-serif;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    cursor:pointer;
   }
 
-  .content {
-    padding: 28px;
+  .loader-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
   }
 
-  .hidden { display: none !important; }
-
-  .brand {
-    display: grid;
-    grid-template-columns: 78px 1fr;
-    gap: 18px;
-    align-items: center;
-    margin-bottom: 24px;
+  .loader{
+    width:28px;
+    height:28px;
+    border:3px solid rgba(255,255,255,.12);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:spin .85s linear infinite;
+    flex:0 0 auto;
   }
 
-  .logo-wrap {
-    width: 78px;
-    height: 78px;
-    display: grid;
-    place-items: center;
-    position: relative;
-    background:
-      linear-gradient(135deg, rgba(240,182,77,.26), transparent 44%),
-      linear-gradient(180deg, #252c36, #101319);
-    border: 1px solid var(--line-strong);
-    box-shadow:
-      inset 0 0 0 1px rgba(0,0,0,.45),
-      0 18px 44px rgba(0,0,0,.45);
+  .loader-bar{
+    height:6px;
+    flex:1;
+    background:rgba(255,255,255,.08);
+    overflow:hidden;
+    position:relative;
   }
 
-  .logo-wrap::before,
-  .logo-wrap::after {
-    content: "";
-    position: absolute;
-    width: 13px;
-    height: 13px;
-    border-color: var(--gold);
-    opacity: .9;
+  .loader-bar::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    width:42%;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation:scan 1.2s linear infinite;
   }
 
-  .logo-wrap::before {
-    left: -1px;
-    top: -1px;
-    border-left: 2px solid;
-    border-top: 2px solid;
+  .lang-switch{
+    margin-top:14px;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
   }
 
-  .logo-wrap::after {
-    right: -1px;
-    bottom: -1px;
-    border-right: 2px solid;
-    border-bottom: 2px solid;
+  .mini-btn{
+    appearance:none;
+    border:1px solid var(--line-strong);
+    background:#1f2530;
+    color:var(--text);
+    border-radius:0;
+    min-width:58px;
+    min-height:40px;
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    cursor:pointer;
   }
 
-  #logo,
-  #logo2 {
-    max-width: 68%;
-    max-height: 68%;
-    display: block;
-    filter: drop-shadow(0 8px 18px rgba(0,0,0,.55));
+  .mini-btn.active{
+    color:#17130b;
+    background:linear-gradient(180deg, var(--accent-2), var(--accent));
+    border-color:#c69339;
   }
 
-  .eyebrow {
-    margin: 0 0 7px;
-    color: var(--gold-2);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .22em;
-    text-transform: uppercase;
+  .success{color:var(--success)}
+  .error{color:var(--danger)}
+
+  #confetti-container{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:99;
   }
 
-  .title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(42px, 9vw, 62px);
-    font-weight: 700;
-    line-height: .82;
-    letter-spacing: .025em;
-    text-transform: uppercase;
-    text-shadow:
-      0 2px 0 rgba(0,0,0,.7),
-      0 18px 44px rgba(240,182,77,.18);
+  @keyframes spin{
+    to{transform:rotate(360deg);}
   }
 
-  .subtitle {
-    margin: 12px 0 0;
-    max-width: 340px;
-    color: var(--muted);
-    font-size: 17px;
-    font-weight: 600;
-    line-height: 1.35;
+  @keyframes scan{
+    0%{transform:translateX(-120%)}
+    100%{transform:translateX(320%)}
   }
 
-  .section {
-    position: relative;
-    border: 1px solid var(--line);
-    background:
-      linear-gradient(135deg, rgba(255,255,255,.07), transparent 30%),
-      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.018));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.055);
-  }
-
-  .section::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 3px;
-    height: 100%;
-    background: linear-gradient(180deg, var(--gold), rgba(240,182,77,0));
-  }
-
-  .section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 15px 18px;
-    border-bottom: 1px solid var(--line);
-    background: rgba(0,0,0,.16);
-  }
-
-  .section-title {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: 25px;
-    font-weight: 700;
-    line-height: .95;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-  }
-
-  .section-tag {
-    color: var(--faint);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-  }
-
-  .lang-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 18px;
-  }
-
-  .btn,
-  .mini-btn {
-    appearance: none;
-    border-radius: 0;
-    font-family: var(--font-display);
-    text-transform: uppercase;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn {
-    min-height: 62px;
-    padding: 14px 16px;
-    border: 1px solid var(--line-strong);
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: .045em;
-    transition: transform .14s ease, border-color .14s ease, filter .14s ease;
-  }
-
-  .btn::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(110deg, transparent, rgba(255,255,255,.24), transparent);
-    transform: translateX(-120%);
-    transition: transform .45s ease;
-  }
-
-  .btn:hover::before {
-    transform: translateX(120%);
-  }
-
-  .btn:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.08);
-  }
-
-  .btn:active {
-    transform: translateY(1px);
-  }
-
-  .btn-primary {
-    color: #1b1205;
-    border-color: #d49a38;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.32), transparent 28%),
-      linear-gradient(180deg, var(--gold-2), var(--gold) 58%, #c77e22);
-    box-shadow: 0 18px 44px rgba(240,182,77,.2);
-  }
-
-  .btn-secondary {
-    color: var(--text);
-    background:
-      linear-gradient(180deg, rgba(255,255,255,.075), transparent 34%),
-      linear-gradient(180deg, #303846, #171c23);
-  }
-
-  .auth-screen .section {
-    padding: 22px 20px;
-  }
-
-  .status-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  #msg {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(30px, 7vw, 42px);
-    font-weight: 700;
-    line-height: .92;
-    letter-spacing: .025em;
-    text-transform: uppercase;
-  }
-
-  #submsg {
-    margin: 0;
-    min-height: 40px;
-    color: var(--muted);
-    font-size: 17px;
-    font-weight: 600;
-    line-height: 1.35;
-  }
-
-  .loader-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    width: 100%;
-  }
-
-  .loader {
-    width: 34px;
-    height: 34px;
-    border: 3px solid rgba(255,255,255,.13);
-    border-top-color: var(--gold);
-    border-right-color: rgba(240,182,77,.65);
-    border-radius: 50%;
-    animation: spin .78s linear infinite;
-    flex: 0 0 auto;
-  }
-
-  .loader-bar {
-    height: 9px;
-    flex: 1;
-    background: rgba(0,0,0,.28);
-    border: 1px solid rgba(255,255,255,.09);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .loader-bar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    width: 44%;
-    background: linear-gradient(90deg, transparent, var(--gold), #fff1bf, transparent);
-    animation: scan 1.15s linear infinite;
-  }
-
-  .lang-switch {
-    margin-top: 16px;
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .mini-btn {
-    min-width: 62px;
-    min-height: 42px;
-    padding: 8px 13px;
-    border: 1px solid var(--line-strong);
-    background: linear-gradient(180deg, #252c36, #151920);
-    color: var(--text);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: .16em;
-  }
-
-  .mini-btn.active {
-    color: #1b1205;
-    background: linear-gradient(180deg, var(--gold-2), var(--gold));
-    border-color: #d49a38;
-  }
-
-  .success {
-    color: var(--green);
-    text-shadow: 0 0 28px rgba(143,240,164,.22);
-  }
-
-  .error {
-    color: var(--red);
-    text-shadow: 0 0 28px rgba(230,84,69,.24);
-  }
-
-  #confetti-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-    z-index: 99;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes scan {
-    0% { transform: translateX(-125%); }
-    100% { transform: translateX(325%); }
-  }
-
-  @keyframes frameIn {
-    from {
-      opacity: 0;
-      transform: translateY(20px) scale(.985);
-      filter: blur(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      filter: blur(0);
-    }
-  }
-
-  @media (max-width: 520px) {
-    body {
-      overflow: auto;
+  @media (max-width: 420px){
+    .content{
+      padding:18px 14px 14px;
     }
 
-    .page {
-      align-items: stretch;
+    .brand{
+      gap:12px;
+      margin-bottom:16px;
     }
 
-    .frame {
-      margin: auto 0;
+    .logo-wrap{
+      width:56px;
+      height:56px;
+      flex-basis:56px;
     }
 
-    .content {
-      padding: 22px 16px;
+    .title{
+      font-size:29px;
     }
 
-    .brand {
-      grid-template-columns: 64px 1fr;
-      gap: 14px;
-      margin-bottom: 19px;
+    .lang-buttons{
+      grid-template-columns:1fr;
     }
 
-    .logo-wrap {
-      width: 64px;
-      height: 64px;
-    }
-
-    .subtitle,
-    #submsg {
-      font-size: 15px;
-    }
-
-    .lang-buttons {
-      grid-template-columns: 1fr;
-      padding: 14px;
-    }
-
-    .btn {
-      min-height: 56px;
-      font-size: 22px;
-    }
-
-    .section-head {
-      padding: 13px 15px;
-    }
-
-    .section-title {
-      font-size: 22px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: .01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: .01ms !important;
+    #msg{
+      font-size:24px;
     }
   }
 </style>
 </head>
-
 <body>
-  <div class="scene"></div>
-  <div class="grain"></div>
-  <div class="scanlines"></div>
-  <div class="vignette"></div>
+  <div class="grid"></div>
+  <div class="noise"></div>
 
-  <main class="page">
-    <section class="frame">
+  <div class="page">
+    <div class="frame">
       <div class="topbar"></div>
-
       <div class="content">
+
         <div id="langScreen" class="lang-screen">
           <div class="brand">
             <div class="logo-wrap">
-              <img id="logo" src="logo.png" alt="RushRetake logo">
+              <img id="logo" src="logo.png" alt="Logo">
             </div>
             <div class="brand-copy">
-              <p class="eyebrow">Telegram Secure Auth</p>
+              <p class="eyebrow">Telegram Auth</p>
               <h1 class="title">RushRetake</h1>
               <p id="langTitle" class="subtitle">Choose your language to continue</p>
             </div>
@@ -633,7 +446,6 @@
               <h2 class="section-title">Language</h2>
               <span class="section-tag">Select</span>
             </div>
-
             <div class="lang-buttons">
               <button id="langSelectEn" type="button" class="btn btn-primary">English</button>
               <button id="langSelectRu" type="button" class="btn btn-secondary">Русский</button>
@@ -644,10 +456,10 @@
         <div id="authScreen" class="auth-screen hidden">
           <div class="brand">
             <div class="logo-wrap">
-              <img id="logo2" src="logo.png" alt="RushRetake logo">
+              <img id="logo2" src="logo.png" alt="Logo">
             </div>
             <div class="brand-copy">
-              <p class="eyebrow">Telegram Secure Auth</p>
+              <p class="eyebrow">Telegram Auth</p>
               <h1 class="title">RushRetake</h1>
             </div>
           </div>
@@ -656,6 +468,12 @@
             <div class="status-wrap">
               <p id="msg">Connecting your account...</p>
               <p id="submsg"></p>
+
+              <div id="loginCodePanel" class="login-code-panel hidden">
+                <p id="loginCodeLabel" class="login-code-label">Login code</p>
+                <div id="loginCode" class="login-code">---</div>
+                <button id="copyCodeBtn" type="button" class="copy-code-btn">Copy code</button>
+              </div>
 
               <div class="loader-row">
                 <div id="loader" class="loader"></div>
@@ -670,14 +488,13 @@
           </div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </div>
 
   <div id="confetti-container"></div>
 
 <script>
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-
 if (tg) {
   try {
     tg.ready();
@@ -694,8 +511,13 @@ const i18n = {
     openInTelegramSub: "This authorization only works inside Telegram WebApp.",
     serverError: "Server error.",
     serverErrorSub: "Something went wrong while contacting the auth server.",
-    done: "Done! Your login code was sent to Telegram.",
-    doneSub: "Return to the game and continue sign in.",
+    done: "Login code ready.",
+    doneSub: "Enter this code in the game. It is valid for 5 minutes.",
+    codeLabel: "Login code",
+    copyCode: "Copy code",
+    copied: "Code copied.",
+    copyManual: "Select the code and copy it manually.",
+    missingCode: "Server did not return a login code.",
     registrationFailed: "Registration failed.",
     rateLimit: "Too many attempts. Please wait."
   },
@@ -707,8 +529,13 @@ const i18n = {
     openInTelegramSub: "Авторизация работает только внутри Telegram WebApp.",
     serverError: "Ошибка сервера.",
     serverErrorSub: "Не удалось связаться с сервером авторизации.",
-    done: "Готово! Код входа отправлен в Telegram.",
-    doneSub: "Вернитесь в игру и продолжите вход.",
+    done: "Код входа готов.",
+    doneSub: "Введите этот код в игре. Он действует 5 минут.",
+    codeLabel: "Код входа",
+    copyCode: "Скопировать код",
+    copied: "Код скопирован.",
+    copyManual: "Выделите код и скопируйте вручную.",
+    missingCode: "Сервер не вернул код входа.",
     registrationFailed: "Не удалось завершить регистрацию.",
     rateLimit: "Слишком много попыток. Подождите."
   }
@@ -716,138 +543,147 @@ const i18n = {
 
 let currentLang = "";
 let authStarted = false;
+let currentLoginCode = "";
 
-function t(key) {
+function t(key){
   return (i18n[currentLang] || i18n.en)[key] || key;
 }
 
-function setMessage(text, sub = "", type = "") {
+function setMessage(text, sub = "", type = ""){
   const msg = document.getElementById("msg");
   const submsg = document.getElementById("submsg");
-
   if (!msg || !submsg) return;
-
   msg.innerText = text;
   submsg.innerText = sub;
   msg.classList.remove("success", "error");
-
-  if (type) {
-    msg.classList.add(type);
-  }
+  if(type) msg.classList.add(type);
 }
 
-function hideLoader() {
-  const loader = document.getElementById("loader");
-  if (loader) loader.style.display = "none";
+function hideLoader(){
+  const l = document.getElementById("loader");
+  if(l) l.style.display = "none";
 }
 
-function showLoader() {
-  const loader = document.getElementById("loader");
-  if (loader) loader.style.display = "block";
+function showLoader(){
+  const l = document.getElementById("loader");
+  if(l) l.style.display = "block";
 }
 
-function updateLanguageButtons() {
+function updateLanguageButtons(){
   const enBtn = document.getElementById("langEnBtn");
   const ruBtn = document.getElementById("langRuBtn");
-
   if (enBtn) enBtn.classList.toggle("active", currentLang === "en");
   if (ruBtn) ruBtn.classList.toggle("active", currentLang === "ru");
 }
 
-function renderTexts() {
+function renderTexts(){
   const langTitle = document.getElementById("langTitle");
+  if (langTitle) langTitle.innerText = t("chooseLanguage");
 
-  if (langTitle) {
-    langTitle.innerText = t("chooseLanguage");
-  }
-
+  const loginCodeLabel = document.getElementById("loginCodeLabel");
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
+  if (loginCodeLabel) loginCodeLabel.innerText = t("codeLabel");
+  if (copyCodeBtn) copyCodeBtn.innerText = t("copyCode");
   updateLanguageButtons();
 }
 
-function showAuthScreen() {
+function showLoginCode(code){
+  currentLoginCode = String(code || "").trim();
+  const loginCodePanel = document.getElementById("loginCodePanel");
+  const loginCode = document.getElementById("loginCode");
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
+
+  if (loginCode) loginCode.innerText = currentLoginCode;
+  if (copyCodeBtn) copyCodeBtn.disabled = !currentLoginCode;
+  if (loginCodePanel) loginCodePanel.classList.toggle("hidden", !currentLoginCode);
+}
+
+function hideLoginCode(){
+  currentLoginCode = "";
+  const loginCodePanel = document.getElementById("loginCodePanel");
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
+  if (copyCodeBtn) copyCodeBtn.disabled = true;
+  if (loginCodePanel) loginCodePanel.classList.add("hidden");
+}
+
+async function copyLoginCode(){
+  if (!currentLoginCode) return;
+
+  try {
+    await navigator.clipboard.writeText(currentLoginCode);
+    setMessage(t("done"), t("copied"), "success");
+  } catch {
+    setMessage(t("done"), t("copyManual"), "success");
+  }
+}
+
+function showAuthScreen(){
   const langScreen = document.getElementById("langScreen");
   const authScreen = document.getElementById("authScreen");
-
   if (langScreen) langScreen.classList.add("hidden");
   if (authScreen) authScreen.classList.remove("hidden");
 }
 
-function selectLanguage(lang) {
+function selectLanguage(lang){
   currentLang = lang;
   renderTexts();
   showAuthScreen();
   startAuthFlow();
 }
 
-function changeLanguage(lang) {
+function changeLanguage(lang){
   currentLang = lang;
   renderTexts();
 }
 
-function spawnConfettiExplosion() {
+function spawnConfettiExplosion(){
   const container = document.getElementById("confetti-container");
   if (!container) return;
-
-  const colors = ["#f0b64d", "#ffd27a", "#ffffff", "#8ff0a4", "#e65445"];
-
-  for (let i = 0; i < 76; i++) {
-    const piece = document.createElement("div");
-    const size = 4 + Math.random() * 9;
-
-    piece.style.cssText = `
+  const colors = ["#f2b54a","#ffd17a","#ffffff","#84f2a0"];
+  for(let i = 0; i < 64; i++){
+    const d = document.createElement("div");
+    d.style.cssText = `
       position:absolute;
-      width:${size}px;
-      height:${size * (Math.random() > .55 ? 1 : .38)}px;
+      width:${5 + Math.random() * 7}px;
+      height:${5 + Math.random() * 7}px;
+      border-radius:${Math.random() > 0.55 ? "50%" : "2px"};
       left:50%;
       top:50%;
       opacity:1;
-      border-radius:${Math.random() > .75 ? "50%" : "1px"};
-      box-shadow:0 0 18px rgba(240,182,77,.22);
     `;
-
-    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    container.appendChild(piece);
+    d.style.background = colors[Math.floor(Math.random() * colors.length)];
+    container.appendChild(d);
 
     const angle = Math.random() * Math.PI * 2;
-    const speed = 4 + Math.random() * 9;
+    const speed = 4 + Math.random() * 8;
     const gravity = 0.18;
-
     let vx = Math.cos(angle) * speed;
-    let vy = Math.sin(angle) * speed - 2.4;
-    let x = 0;
-    let y = 0;
-    let opacity = 1;
-    let rotation = Math.random() * 360;
+    let vy = Math.sin(angle) * speed - 2;
+    let x = 0, y = 0, opacity = 1;
 
-    (function animate() {
+    (function anim(){
       x += vx;
       y += vy;
       vy += gravity;
-      rotation += 9 + Math.random() * 5;
-      opacity -= 0.013;
-
-      piece.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
-      piece.style.opacity = opacity;
-
-      if (opacity > 0) {
-        requestAnimationFrame(animate);
-      } else {
-        piece.remove();
-      }
+      opacity -= 0.014;
+      d.style.transform = `translate(${x}px, ${y}px) rotate(${y * 5}deg)`;
+      d.style.opacity = opacity;
+      if(opacity > 0) requestAnimationFrame(anim);
+      else d.remove();
     })();
   }
 }
 
-async function startAuthFlow() {
-  if (authStarted) return;
+async function startAuthFlow(){
+  if(authStarted) return;
   authStarted = true;
 
+  hideLoginCode();
   setMessage(t("connecting"), t("connectingSub"));
   showLoader();
 
   const initData = tg ? (tg.initData || "") : "";
-
-  if (!initData) {
+  if (!initData){
     setMessage(t("openInTelegram"), t("openInTelegramSub"), "error");
     hideLoader();
     authStarted = false;
@@ -858,7 +694,7 @@ async function startAuthFlow() {
     const res = await fetch("https://telegram-auth-70lq.onrender.com/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ initData })
+      body: JSON.stringify({ initData, web_app: true })
     });
 
     const raw = await res.text();
@@ -874,20 +710,29 @@ async function startAuthFlow() {
     }
 
     if (res.status === 429) {
-      setMessage((json?.message || t("rateLimit")), t("serverErrorSub"), "error");
+      setMessage("❌ " + (json?.message || t("rateLimit")), t("serverErrorSub"), "error");
       hideLoader();
       authStarted = false;
       return;
     }
 
     if (!json.ok) {
-      setMessage((json.message || json.error || t("registrationFailed")), t("serverErrorSub"), "error");
+      setMessage("❌ " + (json.message || json.error || t("registrationFailed")), t("serverErrorSub"), "error");
       hideLoader();
       authStarted = false;
       return;
     }
 
-    setMessage(t("done"), t("doneSub"), "success");
+    const loginCode = String(json.code || json.login_code || "").trim();
+    if (!loginCode) {
+      setMessage("❌ " + t("missingCode"), t("serverErrorSub"), "error");
+      hideLoader();
+      authStarted = false;
+      return;
+    }
+
+    showLoginCode(loginCode);
+    setMessage("✓ " + t("done"), t("doneSub"), "success");
     hideLoader();
     spawnConfettiExplosion();
   } catch {
@@ -897,19 +742,21 @@ async function startAuthFlow() {
   }
 }
 
-function bindEvents() {
+function bindEvents(){
   const langSelectEn = document.getElementById("langSelectEn");
   const langSelectRu = document.getElementById("langSelectRu");
   const langEnBtn = document.getElementById("langEnBtn");
   const langRuBtn = document.getElementById("langRuBtn");
+  const copyCodeBtn = document.getElementById("copyCodeBtn");
 
   if (langSelectEn) langSelectEn.addEventListener("click", () => selectLanguage("en"));
   if (langSelectRu) langSelectRu.addEventListener("click", () => selectLanguage("ru"));
   if (langEnBtn) langEnBtn.addEventListener("click", () => changeLanguage("en"));
   if (langRuBtn) langRuBtn.addEventListener("click", () => changeLanguage("ru"));
+  if (copyCodeBtn) copyCodeBtn.addEventListener("click", copyLoginCode);
 }
 
-function init() {
+function init(){
   bindEvents();
   currentLang = "en";
   renderTexts();
